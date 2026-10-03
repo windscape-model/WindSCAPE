@@ -1,0 +1,8 @@
+Vendored from: https://github.com/erf-model/ERF (public, erf-model/ERF)
+Branch: development
+Commit: 7ed8202c760aa84251c5051aecdc0c433fc9a08f  (Add SatAdj conservation unit test (#3197))
+Vendored: 2026-05-22 (Phase 1.5 ERF re-base)
+Local modifications (re-applied on top): Coupler hooks (advanceOneCoarseStep + pre_advance_hook,
+  extractSurfacePressure, coupler loop accessors, setWaveElevation/fillWaveTerrain + ERF_TI_utils.H
+  injection), CRESCENTWaves custom terrain, and the Exec/DevTests/ERF_CRESCENT_Test problem.
+Previous base: erf-model/ERF development ~PR#2795 (pre-rebase state at tag v0.1-coupler-twoway).

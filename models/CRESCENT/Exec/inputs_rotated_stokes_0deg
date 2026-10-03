@@ -1,0 +1,43 @@
+# Rotated Stokes Wave Test: 0-degree propagation angle (Sanity Check)
+#
+# Purpose: Verify that wave_angle = 0.0 produces identical results
+#          to the original Stokes wave implementation
+#
+# Test Setup:
+#   - Stokes wave at 0° angle (pure x-propagation)
+#   - Single level (L0 only, no nesting)
+#   - Initialization only (max_step = 0)
+#   - Should match original inputs_stokes_test results
+#
+# Expected Result:
+#   - eta_y and phi_y should be ~zero (machine precision)
+#   - eta_x and phi_x should match 0° analytical solution
+#   - eta and phi should match original Stokes implementation
+
+# Simulation time control
+max_step = 0              # Test at initialization only
+stop_time = 0.0
+
+# Domain configuration (square domain for clean FFT modes)
+amr.n_cell = 128 128 1
+geometry.prob_extent = 200.0 200.0 10.0
+geometry.is_periodic = 1 1 0
+amr.max_level = 0         # Single level only (no nesting)
+
+# HOS solver parameters
+hos.dt = 0.01
+hos.perturbation_order = 3
+
+# Wave parameters - Pure x-propagation (sanity check)
+hos.wave_type = "stokes"
+hos.wave_mode_x = 5                    # Total wavenumber magnitude
+hos.wave_angle = 0.0                   # 0 degrees = pure +x propagation
+hos.wave_steepness = 0.1
+hos.beta1_filter = 100.0               # Very large to disable filtering for validation
+hos.beta2_filter = 100.0               # Very large to disable filtering for validation
+hos.peak_wavenumber_override = 100.0   # Override peak to disable filtering
+
+# Output configuration
+hos.plot_file = "rotated_stokes_0deg"
+hos.plot_int = 1          # Write initial condition
+hos.verbosity = 2

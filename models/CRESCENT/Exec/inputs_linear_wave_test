@@ -1,0 +1,59 @@
+# Linear wave test - force eta=0 to test DNO computation
+# This tests phi_z = ifft(fft(phi)*|k|) without eta coupling
+
+# DOMAIN GEOMETRY
+geometry.prob_lo     = 0.0 0.0 -10.0
+geometry.prob_hi     = 200.0 200.0 10.0
+geometry.is_periodic = 1 1 0
+
+# AMR parameters
+amr.max_level = 1
+amr.n_cell = 64 64 1
+amr.max_grid_size = 64
+amr.regrid_int = 1000
+
+# Refinement region (nested AMR L1 box)
+amr.refinement_indicators = box1
+amr.box1.in_box_lo = 25.0 25.0 -10.0
+amr.box1.in_box_hi = 175.0 175.0 10.0
+amr.ref_ratio_vect = 2 2 1
+
+# TIME STEPPING
+max_step = 0  # INITIALIZATION ONLY - no time advancement
+stop_time = 100.0
+hos.cfl = 0.5
+hos.dt_fixed = 0.01
+
+# HOS PARAMETERS
+hos.wave_type = "stokes"
+hos.perturbation_order = 3
+
+# Y-DIRECTION WAVE (to test DNO computation)
+hos.wave_mode_x = 0
+hos.wave_mode_y = 5
+hos.wave_angle = 90.0  # 90° = y-direction
+hos.wave_steepness = 0.01  # VERY SMALL for nearly linear wave
+
+# NESTED AMR (CRESCENT algorithm)
+hos.use_crescent_algorithm = 1
+hos.roi_accurate_fraction = 0.25
+hos.roi_spectral_fraction = 0.15
+hos.damping_steepness = 2.0
+hos.blending_steepness = 2.0
+
+# C³-REPAIR
+hos.use_c3_repair = 1
+hos.c3_use_interface = 1
+hos.use_sequential_blending = 1
+
+# OUTPUT - Disable for faster testing
+amr.plot_int = -1
+amr.check_int = -1
+amr.v = 1
+hos.sum_interval = -1
+hos.tecplot_int = -1
+
+# This will test linear DNO: phi_z = ifft(fft(phi)*|k|)
+# For phi = A*sin(ky*y), expect phi_z = A*k*cos(ky*y)
+# With mode_y=5, k = 2π*5/200 = 0.157 rad/m
+# If phi_max ≈ 5, expect phi_z_max ≈ 5*0.157 = 0.785 m/s

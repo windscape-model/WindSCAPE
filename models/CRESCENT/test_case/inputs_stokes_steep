@@ -1,0 +1,37 @@
+# Steep Stokes Wave Test
+#
+# Tests numerical stability with high wave steepness (wave_steepness = 0.25)
+# This pushes closer to the breaking limit and tests robustness
+# of the HOS method for strongly nonlinear waves.
+#
+# Expected behavior: Should remain stable for ~100+ timesteps
+# If simulation crashes, may indicate:
+#   - Insufficient dealiasing
+#   - Need for smaller timestep
+#   - Need for higher perturbation order (perturbation_order)
+
+# Simulation time control
+max_step = 100
+stop_time = 10.0
+
+# Domain configuration
+amr.n_cell = 128 128 1
+geometry.prob_extent = 200.0 200.0 10.0
+geometry.is_periodic = 1 1 0
+amr.max_level = 0
+
+# HOS solver parameters
+crescent.dt = 0.005          # Smaller timestep for stability
+crescent.perturbation_order = 4             # Higher order for steep waves
+
+# Wave parameters - Steep Stokes wave
+crescent.wave_type = stokes
+crescent.wave_mode_x = 5
+crescent.wave_steepness = 0.25          # High steepness (a*k ~ 0.25)
+crescent.swell_wavenumber = 1.0
+crescent.beta1_filter = 1.0
+crescent.beta2_filter = 1.0
+
+# Output configuration
+crescent.plot_file = "stokes_steep"
+crescent.plot_int = 10       # Output every 10 steps

@@ -1,0 +1,42 @@
+# Rotated Stokes Wave Test: 30-degree propagation angle
+#
+# Purpose: Validate FFT-based derivatives (∂η/∂x, ∂η/∂y, ∂φ/∂x, ∂φ/∂y)
+#          for oblique wave propagation
+#
+# Test Setup:
+#   - Stokes wave at 30° angle (π/6 radians)
+#   - Single level (L0 only, no nesting)
+#   - Initialization only (max_step = 0)
+#   - Compare FFT derivatives vs analytical solution
+#
+# Expected Result:
+#   - All derivatives should match analytical solution to machine precision (< 1e-12)
+#   - Non-zero eta_y and phi_y values (unlike 0° case)
+
+# Simulation time control
+max_step = 0              # Test at initialization only
+stop_time = 0.0
+
+# Domain configuration (square domain for clean FFT modes)
+amr.n_cell = 128 128 1
+geometry.prob_extent = 200.0 200.0 10.0
+geometry.is_periodic = 1 1 0
+amr.max_level = 0         # Single level only (no nesting)
+
+# HOS solver parameters
+hos.dt = 0.01
+hos.perturbation_order = 3
+
+# Wave parameters - Rotated Stokes wave
+hos.wave_type = "stokes"
+hos.wave_mode_x = 5                    # Total wavenumber magnitude
+hos.wave_angle = 0.523598775598299     # 30 degrees = π/6 radians
+hos.wave_steepness = 0.1
+hos.beta1_filter = 100.0               # Very large to disable filtering for validation
+hos.beta2_filter = 100.0               # Very large to disable filtering for validation
+hos.peak_wavenumber_override = 100.0   # Override peak to disable filtering
+
+# Output configuration
+hos.plot_file = "rotated_stokes_30deg"
+hos.plot_int = 1          # Write initial condition
+hos.verbosity = 2

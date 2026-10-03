@@ -1,0 +1,66 @@
+# Y-direction Stokes wave initialization test (CRESCENT algorithm)
+# Purpose: Verify L1 initialization with wave propagating in y-direction
+# Expected: eta_y, phi_y, v non-zero; eta_x, phi_x, u near zero
+
+# DOMAIN GEOMETRY
+geometry.prob_lo     = 0.0 0.0 -10.0
+geometry.prob_hi     = 200.0 200.0 10.0
+geometry.is_periodic = 1 1 0
+
+# AMR parameters
+amr.max_level = 1
+amr.n_cell = 64 64 1
+amr.max_grid_size = 64
+amr.regrid_int = 1000
+
+# Refinement region (nested AMR L1 box)
+amr.refinement_indicators = box1
+amr.box1.in_box_lo = 25.0 25.0 -10.0
+amr.box1.in_box_hi = 175.0 175.0 10.0
+amr.ref_ratio_vect = 2 2 1
+
+# TIME STEPPING
+max_step = 0  # INITIALIZATION TEST ONLY
+stop_time = 100.0
+hos.cfl = 0.5
+hos.dt_fixed = 0.01
+
+# HOS PARAMETERS
+hos.wave_type = "stokes"
+hos.perturbation_order = 3
+
+# Y-DIRECTION WAVE
+hos.wave_mode_x = 5  # Will be used as mode_y for 90° wave
+hos.wave_angle = 1.5707963267948966  # π/2 = 90° (y-direction)
+hos.wave_steepness = 0.1
+
+# NESTED AMR (CRESCENT algorithm)
+hos.use_crescent_algorithm = 1
+hos.roi_accurate_fraction = 0.25
+hos.roi_spectral_fraction = 0.15
+hos.damping_steepness = 2.0
+hos.blending_steepness = 2.0
+
+# C³-REPAIR
+hos.use_c3_repair = 1
+hos.c3_use_interface = 1
+hos.use_sequential_blending = 1
+
+# OUTPUT
+amr.plot_int = -1
+amr.check_int = -1
+amr.v = 1
+hos.sum_interval = -1
+
+# EXPECTED RESULTS (initialization test):
+# L0 (coarse grid):
+#   - eta varies only in y (uniform in x)
+#   - eta_x ≈ 0, eta_y ≠ 0
+#   - phi_x ≈ 0, phi_y ≠ 0
+#   - u ≈ 0, v ≠ 0
+#
+# L1 (refined grid after C³-repair):
+#   - Same pattern as L0 in interior
+#   - Smooth C³-repaired boundaries
+#   - phi_expansion[0] = phi, phi_expansion[1] ≠ 0, phi_expansion[2] ≠ 0
+#   - All higher-order HOS terms should be non-zero with actual eta

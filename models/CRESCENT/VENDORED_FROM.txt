@@ -1,0 +1,5 @@
+Vendored from: CRESCENT high-order-spectral wave solver, Lawrence Livermore National Laboratory.
+  Released under the BSD 3-Clause License (LLNL-CODE-2024694); the LICENSE file is vendored.
+Local modifications: coupling adapter (prefix constructor, setAtmosphericPressure,
+  advanceSingleTimestep, external surface-exchange view); ProblemBase/Problem/amrex_probinit
+  namespaced under crescent::.

@@ -1,0 +1,33 @@
+# Test case input file for comparing C++ and Fortran HOS implementations
+#
+# This configuration provides a simple test case with identical parameters
+# that should produce the same results in both implementations.
+
+# Simulation time control
+max_step = 20
+stop_time = 2.0
+
+# Domain configuration
+amr.n_cell = 64 64 1
+geometry.prob_extent = 100.0 100.0 10.0
+geometry.is_periodic = 1 1 0
+amr.max_level = 0
+
+# HOS solver parameters
+crescent.dt = 0.01
+crescent.perturbation_order = 3
+
+# Wave parameters
+crescent.wave_type = jonswap          # Use JONSWAP spectrum for test case
+crescent.wind_speed_10m = 10.0          # Wind speed (m/s)
+crescent.fetch = 5000.0      # Fetch length (m)
+crescent.wave_steepness = 0.1           # Wave steepness
+crescent.swell_wavenumber = 1.0
+crescent.filter_width = 1.0     # Dealiasing filter parameters
+crescent.beta2_filter = 1.0
+crescent.initial_angle = 0.0        # Mean wave direction
+crescent.angle_spread = 1.0        # Directional spreading
+
+# Output configuration
+crescent.plot_file = "comparison_test"
+crescent.plot_int = 5        # Write output every 5 steps

@@ -1,0 +1,34 @@
+# Grid Convergence Study: 256x256 Resolution
+#
+# Part of a convergence study to verify spatial accuracy
+# Run with: nx = 64, 128, 256, 512
+# Compare wave amplitude errors vs analytical Stokes solution
+#
+# Expected: Error ~ (dx)^perturbation_order where perturbation_order is perturbation order
+# For perturbation_order=3, expect ~8x improvement from 64->128->256->512
+
+# Simulation time control
+max_step = 50
+stop_time = 5.0
+
+# Domain configuration
+amr.n_cell = 256 256 1
+geometry.prob_extent = 200.0 200.0 10.0
+geometry.is_periodic = 1 1 0
+amr.max_level = 0
+
+# HOS solver parameters
+crescent.dt = 0.01
+crescent.perturbation_order = 3
+
+# Wave parameters - Standard test wave
+crescent.wave_type = stokes
+crescent.wave_mode_x = 5
+crescent.wave_steepness = 0.1
+crescent.swell_wavenumber = 1.0
+crescent.beta1_filter = 1.0
+crescent.beta2_filter = 1.0
+
+# Output configuration
+crescent.plot_file = "convergence_nx256"
+crescent.plot_int = 10

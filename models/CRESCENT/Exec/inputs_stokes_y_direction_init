@@ -1,0 +1,64 @@
+# Y-direction Stokes wave initialization test
+# Tests L1 initialization with wave propagating in y-direction
+# Purpose: Verify eta_y, phi_y, v are computed correctly (should be non-zero)
+
+# DOMAIN GEOMETRY
+geometry.prob_lo     = 0.0 0.0 -10.0
+geometry.prob_hi     = 200.0 200.0 10.0
+geometry.is_periodic = 1 1 0
+
+# AMR parameters
+amr.max_level = 1
+amr.n_cell = 64 64 1
+amr.max_grid_size = 64
+
+amr.regrid_int = 1000
+
+# Refinement region (nested AMR L1 box)
+amr.refinement_indicators = box1
+amr.box1.in_box_lo = 25.0 25.0 -10.0
+amr.box1.in_box_hi = 175.0 175.0 10.0
+amr.ref_ratio_vect = 2 2 1
+
+# TIME STEPPING
+max_step = 0  # INITIALIZATION TEST ONLY
+stop_time = 1.0
+hos.cfl = 0.5
+hos.dt_fixed = 0.01
+
+# HOS PARAMETERS
+hos.wave_type = "stokes"
+hos.perturbation_order = 3
+
+# Y-DIRECTION WAVE (90 degrees)
+hos.wave_mode_x = 5  # Will be used as mode_y for 90° wave
+hos.wave_angle = 1.5707963267948966  # π/2 = 90° (y-direction)
+hos.wave_steepness = 0.1
+
+# NESTED AMR (CRESCENT algorithm)
+use_crescent_algorithm = 1
+roi_accurate_fraction = 0.25
+roi_spectral_fraction = 0.15
+damping_steepness = 2.0
+blending_steepness = 2.0
+
+# C³-REPAIR
+use_c3_repair = 1
+c3_use_interface = 1
+use_sequential_blending = 1
+
+# OUTPUT
+amr.plot_int = -1
+amr.check_int = -1
+amr.v = 0
+hos.sum_interval = -1
+
+# EXPECTED RESULTS:
+# - eta_x ≈ 0 (wave in y, no x-variation)
+# - eta_y ≠ 0 (wave propagating in y)
+# - phi_x ≈ 0
+# - phi_y ≠ 0
+# - u ≈ 0
+# - v ≠ 0
+# - phi_z ≠ 0 (vertical velocity still present)
+# - All fields should be smooth (no zigzag)

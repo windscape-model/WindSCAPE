@@ -1,0 +1,53 @@
+# ============================================================
+# HOS Wave Solver (Called by ERF)
+# Lawrence Livermore National Laboratory
+# ============================================================
+
+# NOTE: Grid parameters set for HOS coupling
+#   ERF: 40×8 → HOS: 200×40 (5× finer, set by hos_grid_ratio in inputs_erf)
+#   Domain: 200m×40m (matches ERF horizontal)
+
+# ===== GRID SETUP =====
+# Note: HOS reads from crescent.amr.* and crescent.geometry.* (Strategy B)
+crescent.amr.n_cell = 200 40 1
+crescent.amr.max_level = 0
+crescent.amr.blocking_factor = 1   # Must be 1 for 2D-in-3D (nz=1)
+crescent.amr.max_grid_size = 256   # Single box (>= n_cell): the ERF<->HOS coupling refine/coarsen
+                              # loops index fine/coarse MultiFabs with a shared MFIter, which is
+                              # only valid when HOS is one box. CRESCENT's default (32) tiled it
+                              # into 14 boxes -> out-of-bounds write in TransferPressureToHOS.
+
+crescent.geometry.prob_lo = 0.0 0.0 0.0
+crescent.geometry.prob_hi = 200.0 40.0 10.0
+crescent.geometry.is_periodic = 1 1 0
+
+# ===== TIME CONTROL =====
+# HOS dt set by ERF: dt_hos = dt_erf/hos_dt_ratio = 0.005/5 = 0.001s
+crescent.dt = 0.001
+crescent.max_steps = 10000
+crescent.stop_time = 10.0
+
+# ===== WAVE PHYSICS =====
+crescent.perturbation_order = 3               # Medium order for test
+crescent.wave_type = "stokes"                 # Monochromatic Stokes wave (CRESCENT selector)
+crescent.wave_steepness = 0.15                # ka = 0.15 (moderate steepness)
+crescent.swell_wavenumber = 0.0628318         # k = 2π/100m (wavelength = 100m)
+crescent.wave_mode_x = 4                      # Four waves in x-direction (λ = 50m)
+crescent.wave_angle = 0.0                     # Stokes propagation angle (0 = +x)
+
+# ===== FILTERING (for stability) =====
+crescent.beta1_filter = 10.0
+crescent.beta2_filter = 15.0
+
+# ===== OUTPUT (Disable for coupling test) =====
+crescent.plot_file = "crescent_coupled"
+crescent.plot_int = -1                        # Disabled in coupled mode (use ERF plot files)
+crescent.tecplot_int = -1                     # Disable Tecplot output
+
+# ===== CHECKPOINT/RESTART =====
+crescent.check_file = "crescent_chk"
+crescent.check_int = -1                       # DISABLED for coupling debug (was 5)
+# crescent.restart = "crescent_chk00005"           # Uncomment to restart from checkpoint
+
+# ===== VERBOSITY =====
+crescent.verbosity = 1

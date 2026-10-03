@@ -1,0 +1,65 @@
+# ==============================================================================
+# CRESCENT Phase 3 Test: Long-term Stability and Energy Conservation
+# ==============================================================================
+# Validate CRESCENT algorithm over 100 timesteps
+# Expected: <1% energy loss, stable nested AMR throughout
+# ==============================================================================
+
+# Simulation control
+max_step = 100
+stop_time = 10.0
+
+# Domain configuration
+amr.n_cell = 64 64 1
+geometry.prob_extent = 200.0 200.0 10.0
+geometry.is_periodic = 1 1 0
+amr.max_level = 1
+
+# HOS solver parameters
+hos.dt = 0.01
+hos.perturbation_order = 3  # Cubic: φ_z = |k|·φ̂ + |k|²·φ̂·η + |k|³·φ̂·η²/2 (best accuracy)
+
+# AMR refinement - refined region in center
+amr.ref_ratio_vect = 2 2 1
+amr.regrid_int = 1000
+amr.blocking_factor_x = 8
+amr.blocking_factor_y = 8
+amr.blocking_factor_z = 1
+amr.max_grid_size = 32
+
+# Refined region: center 60% of domain
+amr.n_error_buf = 0 0 0
+amr.refinement_indicators = box
+amr.box.in_box_lo = 40.0 40.0 0.0
+amr.box.in_box_hi = 160.0 160.0 1.0
+
+# ==============================================================================
+# CRESCENT Algorithm Parameters
+# ==============================================================================
+hos.use_crescent_algorithm = 1
+
+# Domain structure
+hos.roi_accurate_fraction = 0.25    # Ω_A margin (25% of L1 domain)
+hos.roi_spectral_fraction = 0.15    # Ω_S margin (15% of L1 domain)
+
+# Mask steepness
+hos.damping_steepness = 2.0         # χ_D transition steepness
+hos.blending_steepness = 2.0        # σ transition steepness
+
+# ==============================================================================
+# Wave Parameters - Simple Stokes Wave
+# ==============================================================================
+hos.wave_type = "stokes"
+hos.wave_mode_x = 5
+hos.wave_steepness = 0.1
+hos.swell_wavenumber = 1.0
+hos.beta1_filter = 9.0
+hos.beta2_filter = 12.0
+
+# ==============================================================================
+# Output Control
+# ==============================================================================
+hos.plot_file = "crescent_phase3_long"
+hos.plot_int = 10
+hos.tecplot_int = 10
+hos.verbosity = 1

@@ -1,0 +1,41 @@
+# JONSWAP Spectrum: Storm Conditions
+#
+# Simulates high wind storm conditions with:
+#   - High wind speed (20 m/s ~ 40 knots ~ hurricane force)
+#   - Large fetch (50 km fully developed sea)
+#   - High wave steepness
+#
+# Expected characteristics:
+#   - Significant wave height: ~4-6 meters
+#   - Peak period: ~10-12 seconds
+#   - Steep, irregular waves
+#   - Good test for nonlinear wave interactions
+
+# Simulation time control
+max_step = 200
+stop_time = 20.0
+
+# Domain configuration
+amr.n_cell = 128 128 1
+geometry.prob_extent = 300.0 300.0 10.0
+geometry.is_periodic = 1 1 0
+amr.max_level = 0
+
+# HOS solver parameters
+crescent.dt = 0.01
+crescent.perturbation_order = 4             # Higher order for steep waves
+
+# Wave parameters - Storm conditions
+crescent.wave_type = jonswap          # JONSWAP spectrum
+crescent.wind_speed_10m = 20.0          # 20 m/s wind speed
+crescent.fetch = 50000.0     # 50 km fetch
+crescent.wave_steepness = 0.15          # Moderate-high steepness
+crescent.swell_wavenumber = 1.0
+crescent.beta1_filter = 1.0
+crescent.beta2_filter = 1.0
+crescent.initial_angle = 0.0        # Mean wave direction (East)
+crescent.angle_spread = 2.0        # Wide directional spreading
+
+# Output configuration
+crescent.plot_file = "jonswap_storm"
+crescent.plot_int = 10

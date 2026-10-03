@@ -1,0 +1,36 @@
+# Long-Time Stokes Wave Simulation
+#
+# Tests long-time accuracy and energy conservation
+# Stokes waves are quasi-steady solutions, so energy should be
+# approximately conserved over many wave periods.
+#
+# Diagnostics to check:
+#   - Total energy drift should be < 1% over 1000 steps
+#   - Wave amplitude should remain stable
+#   - No spurious high-frequency noise
+
+# Simulation time control
+max_step = 1000
+stop_time = 100.0
+
+# Domain configuration
+amr.n_cell = 128 128 1
+geometry.prob_extent = 200.0 200.0 10.0
+geometry.is_periodic = 1 1 0
+amr.max_level = 0
+
+# HOS solver parameters
+crescent.dt = 0.01
+crescent.perturbation_order = 3
+
+# Wave parameters - Standard Stokes wave
+crescent.wave_type = stokes
+crescent.wave_mode_x = 5
+crescent.wave_steepness = 0.1
+crescent.swell_wavenumber = 1.0
+crescent.beta1_filter = 1.0
+crescent.beta2_filter = 1.0
+
+# Output configuration
+crescent.plot_file = "stokes_long"
+crescent.plot_int = 50       # Output every 50 steps to save disk space

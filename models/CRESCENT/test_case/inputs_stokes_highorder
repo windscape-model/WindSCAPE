@@ -1,0 +1,37 @@
+# High-Order Stokes Wave Test (perturbation_order = 5)
+#
+# Tests highest accuracy mode with 5th-order perturbation expansion
+# This is the most accurate HOS configuration but also most expensive
+#
+# Use cases:
+#   - Verification of high-order implementation
+#   - Benchmark for accuracy studies
+#   - Testing convergence of perturbation expansion
+#
+# Computational cost: ~2x higher than perturbation_order=3
+
+# Simulation time control
+max_step = 50
+stop_time = 5.0
+
+# Domain configuration
+amr.n_cell = 128 128 1
+geometry.prob_extent = 200.0 200.0 10.0
+geometry.is_periodic = 1 1 0
+amr.max_level = 0
+
+# HOS solver parameters
+crescent.dt = 0.01
+crescent.perturbation_order = 5             # 5th-order perturbation (highest accuracy)
+
+# Wave parameters - Standard Stokes wave
+crescent.wave_type = stokes
+crescent.wave_mode_x = 5
+crescent.wave_steepness = 0.15          # Moderate steepness to benefit from high order
+crescent.swell_wavenumber = 1.0
+crescent.beta1_filter = 1.0
+crescent.beta2_filter = 1.0
+
+# Output configuration
+crescent.plot_file = "stokes_highorder"
+crescent.plot_int = 10

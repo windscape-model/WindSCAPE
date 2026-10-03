@@ -1,0 +1,39 @@
+# Build directories
+**/build/
+
+# Output files
+*.plt*
+*.dat
+*.out
+*.log
+
+# Compiled files
+*.o
+*.a
+*.so
+*.exe
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+
+# Build trees (superbuild + component builds) and local artifacts
+/build/
+**/tmp_build_dir/
+
+# AMReX crash dumps
+Backtrace.*
+
+# Local-only material, excluded from release
+/untracked-files/
+
+# Local editor/tool config
+/.claude/
