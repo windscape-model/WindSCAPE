@@ -1,0 +1,52 @@
+Vendored from: https://github.com/erf-model/ERF (public, erf-model/ERF)
+Upstream base: development @ 3b886eccd5450aadce06eece455d99949566e13a
+  (Refactor Kessler microphysics into BFB-validated helpers (#3198), 2026-05-22); see
+  UPSTREAM.md for the full record. Records before 2026-10-03 named 7ed8202 as the fork point;
+  the vendored states of 2026-07-17 to 2026-09-25 already contained 3b886ecc.
+Source branch: tli-fluid/ERF-mrigark, branch wave-public (also hosted as windscape-model/ERF-WAVE,
+  branch main), commit
+  08705416120ee12f87a1318179ce32d02866178a (2026-10-03), 10 commits on upstream 3b886ecc: the
+  code of the JCP manuscript (fork tag jcp-manuscript-2026-10-02 = eff4101c on
+  jcp-writing-pass) cleaned for public release. The options erf.substep_schedule,
+  erf.substep_time_order, erf.moving_geometry_update and erf.use_acoustic_radiation_top are
+  removed; the analytic wave is defined once in Source/Utils/ERF_MovingWave.H; comments are
+  rewritten; the MovingSineWave* surfaces use prob_lo; erf.most.wave_drag requires
+  MovingSineWaveRamp; the research files are gone (Exec study folders including
+  Exec/wave_abl_les and Exec/o2_model, Docs/ITEM3_*, mrigark_paper/, CLAUDE.md); the
+  wind-over-waves decks are in Exec/CanonicalTests/WindOverWaves; upstream paper/ is restored.
+  Results are bitwise identical to the tag on CPU and GPU (fork record
+  cleanup_bitwise_2026-10-02/README.md). The ninth commit, 2fd5703b, changes documentation
+  only: the README of Exec/CanonicalTests/WindOverWaves lists the four local verification
+  cases, and the ERF manual documents the moving-mesh inputs, erf.beta_d, erf.face_sync_int,
+  the wave drag and the terrain-velocity build switch. The tenth commit, 08705416, adds a note
+  at the top of README.rst: the upstream base, what the fork adds, the wind-over-waves cases.
+Vendored: 2026-10-03, replacing jcp-writing-pass @ ba75feea + hooks (2026-09-25); from ba75feea
+  to the tag the code only added two diagnostic options (off by default). wave-public does not
+  descend from ba75feea, so this sync was not a merge: the WindSCAPE delta (ba75feea -> the
+  vendored models/ERF) was applied to wave-public with git apply --3way; the conflicts in
+  ERF_TI_utils.H, ERF_PhysBCFunct.H and ERF_BoundaryConditionsXvel.cpp were resolved on the
+  wave-public code (UPSTREAM.md). Later the same day, the documentation commits 2fd5703b and
+  08705416 were applied as the diffs fbc4a5f4..2fd5703b and 2fd5703b..08705416 (no hook file
+  changes). The next sync from wave-public can use the ordinary merge again, with base 08705416
+  + hooks.
+Local modifications for WindSCAPE (re-applied on top): Coupler hooks (setCouplingHook
+  call in Evolve, extractSurfacePressure, setWaveElevation/fillWaveTerrain +
+  ERF_TI_utils.H injection in both the RK-stage and the acoustic sub-step terrain updates,
+  including the lagged surface of erf.grid_velocity_sampling = IntervalStart, served from a
+  third stored wave-surface slab), CRESCENTWaves custom terrain, the
+  Exec/DevTests/ERF_CRESCENT_Test problem (including the inputs_erf_orbital no-slip
+  variant), and the wave-data path of the orbital moving-wall BC
+  (setWaveSurfaceVelocity + ERF_WaveSurfaceVelBC.H + ERFPhysBCFunct_u plumbing into
+  the gated ERF_USE_TERRAIN_VELOCITY branch, next to the MovingWave of wave-public); full
+  inventory in UPSTREAM.md.
+Vendoring exclusions: Tests/ERFGoldFiles, **/*.nc MetGrid data, the windfarm terrain file and
+  the Submodules/ folders are dropped (see UPSTREAM.md for how to re-fetch them for regression
+  testing). Force-added because an ignore rule hides them: Docs/sphinx_doc/Makefile and
+  .Exec_dev/DataAssimilation/ReadPltFileAndInterpolate/Makefile (ERF's .gitignore rule
+  "Makefile"), Build/cmake_with_particles.sh and Build/Perlmutter/cmake_with_cuda_perlmutter.sh~
+  (the superproject rule "**/build/", which also matches Build/ because git on macOS ignores
+  case); the vendored states before 2026-10-03 lacked these four files.
+Previous vendored states: wave-public @ fbc4a5f4 + hooks (2026-10-03);
+  jcp-writing-pass @ ba75feea + hooks (2026-09-25);
+  jcp-writing-pass @ 2a7c63b + hooks (2026-09-04); item3/o2-second-order @ 6717d76 + hooks
+  (2026-07-17); upstream 7ed8202 + hooks only (2026-05-22, Phase 1.5 re-base).

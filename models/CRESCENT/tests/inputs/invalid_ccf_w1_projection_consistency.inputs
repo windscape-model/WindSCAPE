@@ -1,0 +1,18 @@
+max_step = 0
+
+amr.n_cell = 8 8 1
+amr.max_level = 1
+geometry.prob_extent = 8.0 8.0 1.0
+geometry.is_periodic = 1 1 0
+amr.ref_ratio_vect = 2 2 1
+
+crescent.wave_type = "stokes"
+crescent.wave_mode_x = 1
+crescent.dt = 0.1
+crescent.use_crescent_algorithm = 1
+crescent.L1_box_lo = 1.0 1.0
+crescent.L1_box_hi = 7.0 7.0
+crescent.l1_coupling_mode = 2
+crescent.ccf_w1_projection_consistency = 2
+crescent.plot_int = -1
+crescent.tecplot_int = -1

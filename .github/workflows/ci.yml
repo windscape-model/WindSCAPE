@@ -1,0 +1,215 @@
+name: CI
+
+# WindSCAPE CI on GitHub Actions (the active CI for github.com/windscape-model/WindSCAPE).
+# Builds the full superbuild (shared AMReX -> erf_api -> crescent_static -> windscape)
+# and runs the Tier 0 smoke suite from Documentation/CI.md: coupled, coupled-nested,
+# orbital moving-wall, coupled sub-stepping, standalone CRESCENT, CRESCENT's own
+# CTest suite (unit + input-contract tests), and the per-instance geometry unit test.
+#
+# The LC GitLab pipeline (.gitlab-ci.yml + .gitlab/LC/) is dormant while the repo
+# lives on GitHub; the same test content can be run manually on LC machines with
+# .gitlab/LC/windscape_test.sh (see Documentation/CI.md).
+#
+# The first (cold) run compiles AMReX + ERF and takes a while; ccache makes
+# subsequent runs much faster.
+
+on:
+  push:
+    branches: [main, 'feature/sync-standalone-*']
+    paths-ignore:
+      - '**.md'
+      - 'Documentation/**'
+      - 'NOTICE'
+      - 'LICENSE'
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      regenerate_golden:
+        description: "Run the 20-step coupled case and upload plt00020 as the new golden artifact (commit it to tests/golden/linux-x86_64/)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-smoke:
+    name: Superbuild and smoke suite (Ubuntu, Release)
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    # contents: write lets the golden-regeneration dispatch commit the new golden
+    # back to the branch (artifact uploads are quota-bound on this account).
+    permissions:
+      contents: write
+    env:
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      CCACHE_MAXSIZE: 1G
+      # CMake reads these from the environment in every ExternalProject
+      # sub-configure, so ccache reaches AMReX/ERF/CRESCENT without forwarding
+      # arguments through the superbuild.
+      CMAKE_C_COMPILER_LAUNCHER: ccache
+      CMAKE_CXX_COMPILER_LAUNCHER: ccache
+
+    steps:
+      - name: Checkout (vendored tree, no submodules)
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            cmake g++ make \
+            libopenmpi-dev openmpi-bin \
+            libfftw3-dev libfftw3-mpi-dev \
+            ccache
+
+      - name: Restore ccache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ github.workspace }}/.ccache
+          key: ccache-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            ccache-${{ runner.os }}-
+
+      - name: Configure superbuild
+        run: cmake -S . -B build/superbuild
+
+      - name: Build superbuild (AMReX, erf_api, crescent_static, windscape)
+        run: cmake --build build/superbuild -j "$(nproc)"
+
+      - name: Build standalone crescent executable and CRESCENT test executables
+        run: cmake --build build/superbuild/crescent-build -j "$(nproc)"
+
+      - name: CRESCENT unit and input-contract tests (ctest)
+        run: ctest --test-dir build/superbuild/crescent-build --output-on-failure
+
+      - name: Coupled smoke (3 steps)
+        run: |
+          mkdir -p ci_runs/coupled && cd ci_runs/coupled
+          cp ../../models/ERF/Exec/DevTests/ERF_CRESCENT_Test/inputs_erf \
+             ../../models/ERF/Exec/DevTests/ERF_CRESCENT_Test/inputs_crescent .
+          mpiexec -np 1 ../../build/superbuild/coupler-build/windscape \
+              inputs_erf max_step=3 erf.plot_int_1=-1 | tee smoke.log
+          grep -q "Coarse STEP 3 ends" smoke.log
+          test "$(grep -c 'Transferred waves from CRESCENT' smoke.log)" -eq 3
+
+      - name: Coupled nested smoke (5 steps, CRESCENT AMR under coupling)
+        run: |
+          mkdir -p ci_runs/nested && cd ci_runs/nested
+          cp ../../models/ERF/Exec/DevTests/ERF_CRESCENT_Test/inputs_erf \
+             ../../models/ERF/Exec/DevTests/ERF_CRESCENT_Test/inputs_crescent_nested .
+          mpiexec -np 1 ../../build/superbuild/coupler-build/windscape \
+              inputs_erf erf.crescent_input_file=inputs_crescent_nested \
+              max_step=5 erf.plot_int_1=-1 | tee nested.log
+          grep -q "Coarse STEP 5 ends" nested.log
+
+      - name: Orbital moving-wall smoke (20 steps, no-slip + viscosity)
+        run: |
+          mkdir -p ci_runs/orbital && cd ci_runs/orbital
+          cp ../../models/ERF/Exec/DevTests/ERF_CRESCENT_Test/inputs_erf_orbital \
+             ../../models/ERF/Exec/DevTests/ERF_CRESCENT_Test/inputs_crescent .
+          mpiexec -np 1 ../../build/superbuild/coupler-build/windscape \
+              inputs_erf_orbital max_step=20 erf.plot_int_1=-1 | tee orbital.log
+          grep -q "Coarse STEP 20 ends" orbital.log
+
+      - name: Coupled sub-stepping smoke (5 steps, implicit acoustic sub-steps)
+        # Exercises the wave-surface override of the sub-step terrain update
+        # (update_terrain_substep), which the default no-sub-stepping deck never reaches.
+        run: |
+          mkdir -p ci_runs/substep && cd ci_runs/substep
+          cp ../../models/ERF/Exec/DevTests/ERF_CRESCENT_Test/inputs_erf \
+             ../../models/ERF/Exec/DevTests/ERF_CRESCENT_Test/inputs_crescent .
+          mpiexec -np 1 ../../build/superbuild/coupler-build/windscape \
+              inputs_erf max_step=5 erf.plot_int_1=-1 \
+              erf.substepping_type=Implicit erf.fixed_mri_dt_ratio=2 \
+              erf.use_lagged_delta_rt=false | tee substep.log
+          grep -q "Coarse STEP 5 ends" substep.log
+
+      - name: Standalone CRESCENT smoke (3 steps)
+        run: |
+          mkdir -p ci_runs/crescent && cd ci_runs/crescent
+          mpiexec -np 1 ../../build/superbuild/crescent-build/Exec/crescent \
+              ../../models/CRESCENT/test_case/inputs_stokes_test \
+              max_step=3 crescent.plot_int=-1 crescent.tecplot_int=-1 | tee crescent.log
+          grep -q "Done timestep 3" crescent.log
+
+      - name: Per-instance geometry unit test
+        run: |
+          cmake -S tests/per_instance_geom -B build/pig -DCMAKE_BUILD_TYPE=Release \
+              -DAMReX_DIR="$PWD/build/superbuild/install/amrex/lib/cmake/AMReX"
+          cmake --build build/pig -j "$(nproc)"
+          mkdir -p ci_runs/pig && cd ci_runs/pig
+          mpiexec -np 1 ../../build/pig/per_instance_geom \
+              ../../tests/per_instance_geom/inputs | tee pig.log
+
+      - name: "Tier 1: regenerate golden plotfile (manual dispatch only)"
+        if: github.event_name == 'workflow_dispatch' && inputs.regenerate_golden
+        run: |
+          mkdir -p ci_runs/golden && cd ci_runs/golden
+          cp ../../models/ERF/Exec/DevTests/ERF_CRESCENT_Test/inputs_erf \
+             ../../models/ERF/Exec/DevTests/ERF_CRESCENT_Test/inputs_crescent .
+          mpiexec -np 1 ../../build/superbuild/coupler-build/windscape \
+              inputs_erf max_step=20 erf.plot_int_1=20 | tee golden.log
+          grep -q "Coarse STEP 20 ends" golden.log
+
+      - name: Commit regenerated golden to the branch
+        if: github.event_name == 'workflow_dispatch' && inputs.regenerate_golden
+        run: |
+          rm -rf tests/golden/linux-x86_64/plt00020
+          mkdir -p tests/golden/linux-x86_64
+          cp -r ci_runs/golden/plt00020 tests/golden/linux-x86_64/plt00020
+          git config user.name  "windscape-ci"
+          git config user.email "windscape-ci@users.noreply.github.com"
+          git add tests/golden/linux-x86_64/plt00020
+          if git diff --cached --quiet; then
+            echo "Golden unchanged; nothing to commit."
+            exit 0
+          fi
+          git commit -m "CI: regenerate linux-x86_64 golden plt00020 (runner-generated)"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+
+      - name: "Tier 1: coupled regression vs golden (20 steps + fcompare)"
+        # Runs whenever the committed golden exists (skipped on golden-regeneration
+        # dispatches, which produce the new golden instead of comparing to the old one).
+        # The golden is generated ON this runner platform (linux x86_64, distro gcc), so
+        # the comparison is same-platform; the tiny tolerances absorb pure last-digit
+        # noise (e.g. a runner-image compiler bump) while catching any real change.
+        if: hashFiles('tests/golden/linux-x86_64/plt00020/Header') != '' && !(github.event_name == 'workflow_dispatch' && inputs.regenerate_golden)
+        run: |
+          mkdir -p ci_runs/regression && cd ci_runs/regression
+          cp ../../models/ERF/Exec/DevTests/ERF_CRESCENT_Test/inputs_erf \
+             ../../models/ERF/Exec/DevTests/ERF_CRESCENT_Test/inputs_crescent .
+          mpiexec -np 1 ../../build/superbuild/coupler-build/windscape \
+              inputs_erf max_step=20 erf.plot_int_1=20 | tee reg.log
+          ../../build/superbuild/install/amrex/bin/amrex_fcompare \
+              -r 1e-12 --abs_tol 1e-13 \
+              ../../tests/golden/linux-x86_64/plt00020 plt00020
+
+      - name: Upload regression candidate on gate failure
+        if: failure()
+        continue-on-error: true   # artifact storage is quota-bound; never mask the real failure
+        uses: actions/upload-artifact@v4
+        with:
+          name: regression-candidate-plt00020
+          path: ci_runs/regression/plt00020
+          if-no-files-found: ignore
+
+      - name: Dump AMReX backtraces on failure
+        if: failure()
+        run: |
+          find ci_runs -name "Backtrace.*" | while read -r f; do
+            echo "===== $f ====="
+            cat "$f"
+          done
+
+      - name: ccache statistics
+        if: always()
+        run: ccache -s
+
+      - name: Save ccache (also on failure, so broken runs still warm the next one)
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ github.workspace }}/.ccache
+          key: ccache-${{ runner.os }}-${{ github.sha }}

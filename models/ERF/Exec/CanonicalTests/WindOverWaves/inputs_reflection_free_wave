@@ -1,0 +1,59 @@
+# Reflection-free wave: the standing wave h = a sin(kx) (1 - cos(omega t)) started from rest,
+# no off-centering and no divergence damping, under a deep domain
+
+# Run length
+max_step  = 100000000
+stop_time = 1.0
+
+# Domain and mesh
+amr.max_level             = 0
+amr.n_cell                = 40 4 200
+amr.refine_grid_layout    = true
+amr.refine_grid_layout_x  = 1
+amr.refine_grid_layout_y  = 1
+amr.refine_grid_layout_z  = 0
+fabarray.mfiter_tile_size = 1024 1024 1024
+geometry.is_periodic      = 1 1 0
+geometry.prob_extent      = 100. 10. 400.
+geometry.prob_lo          = 0.0 0.0 0.0
+
+# Wave surface and initial state
+erf.init_type            = Isentropic
+erf.prob_name            = "Moving Terrain"
+erf.terrain_smoothing    = 2
+erf.terrain_type         = MovingFittedMesh
+prob.Ampl                = 0.16
+prob.T_0                 = 300.
+prob.custom_terrain_type = "MovingSineWaveRest"
+prob.init_wave_field     = 0
+prob.wavelength          = 100.0
+
+# Boundaries
+zhi.type = "SlipWall"
+zlo.type = "SlipWall"
+
+# Physics
+erf.dryscal_horiz_adv_type = Centered_2nd
+erf.dryscal_vert_adv_type  = Centered_2nd
+erf.dycore_horiz_adv_type  = Centered_2nd
+erf.dycore_vert_adv_type   = Centered_2nd
+erf.les_type               = "None"
+erf.molec_diff_type        = "None"
+erf.use_gravity            = true
+
+# Time integration
+erf.beta_d              = 0.0
+erf.beta_s              = 0.0
+erf.fixed_dt            = 0.004
+erf.fixed_mri_dt_ratio  = 4
+erf.substepping_type    = Implicit
+erf.use_lagged_delta_rt = false
+
+# Output
+amr.v            = 0
+erf.check_int    = -1
+erf.plot_file_1  = plt
+erf.plot_int_1   = 250
+erf.plot_vars_1  = density x_velocity y_velocity z_velocity pressure theta pres_hse dens_hse pert_pres pert_dens detJ
+erf.sum_interval = 1
+erf.v            = 0

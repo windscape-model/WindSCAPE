@@ -1,0 +1,13 @@
+max_step = 0
+
+amr.n_cell = 8 8 2
+amr.max_level = 0
+geometry.prob_extent = 8.0 8.0 1.0
+geometry.is_periodic = 1 1 0
+
+crescent.wave_type = "stokes"
+crescent.wave_mode_x = 1
+crescent.dt = 0.1
+crescent.verbosity = 0
+crescent.plot_int = -1
+crescent.tecplot_int = -1

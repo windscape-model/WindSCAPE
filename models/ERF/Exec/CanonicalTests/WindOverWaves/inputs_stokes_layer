@@ -1,0 +1,61 @@
+# Viscous Stokes layer over the traveling wave with the orbital velocity on the no-slip wall
+# Build with USE_TERRAIN_VELOCITY = TRUE
+
+# Run length
+max_step  = 100000000
+stop_time = 12.0
+
+# Domain and mesh
+amr.max_level             = 0
+amr.n_cell                = 50 4 200
+amr.refine_grid_layout    = true
+amr.refine_grid_layout_x  = 1
+amr.refine_grid_layout_y  = 1
+amr.refine_grid_layout_z  = 0
+fabarray.mfiter_tile_size = 1024 1024 1024
+geometry.is_periodic      = 1 1 0
+geometry.prob_extent      = 56.2 10. 50.
+geometry.prob_lo          = 0.0 0.0 0.0
+
+# Wave surface and initial state
+erf.init_type            = Isentropic
+erf.prob_name            = "Moving Terrain"
+erf.terrain_smoothing    = 2
+erf.terrain_type         = MovingFittedMesh
+prob.Ampl                = 0.08
+prob.T_0                 = 300.
+prob.custom_terrain_type = "MovingSineWave"
+prob.wavelength          = 56.2
+
+# Boundaries
+zhi.type = "SlipWall"
+zlo.type = "NoSlipWall"
+
+# Physics
+erf.alpha_T                = 0.0
+erf.dryscal_horiz_adv_type = Centered_2nd
+erf.dryscal_vert_adv_type  = Centered_2nd
+erf.dycore_horiz_adv_type  = Centered_2nd
+erf.dycore_vert_adv_type   = Centered_2nd
+erf.dynamic_viscosity      = 0.8379
+erf.les_type               = "None"
+erf.molec_diff_type        = "Constant"
+erf.rho0_trans             = 1.0
+erf.use_gravity            = true
+erf.vert_implicit          = 0
+
+# Time integration
+erf.beta_s              = 0.1
+erf.fixed_dt            = 0.0005
+erf.fixed_mri_dt_ratio  = 4
+erf.substepping_type    = Implicit
+erf.use_lagged_delta_rt = false
+
+# Output
+amr.v            = 0
+erf.check_int    = -1
+erf.plot_file_1  = plt
+erf.plot_int_1   = 12000
+erf.plot_vars_1  = density x_velocity y_velocity z_velocity pressure theta pres_hse dens_hse pert_pres pert_dens detJ
+erf.sum_interval = -1
+erf.v            = 0

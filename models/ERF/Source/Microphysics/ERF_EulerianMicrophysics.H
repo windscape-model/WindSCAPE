@@ -1,0 +1,184 @@
+/*! @file ERF_EulerianMicrophysics.H
+ *  \brief Contains the Eulerian microphysics class
+ */
+
+#ifndef ERF_EULERIANMICROPHYSICS_H
+#define ERF_EULERIANMICROPHYSICS_H
+
+#include "ERF_NullMoist.H"
+#include "ERF_SAM.H"
+#include "ERF_Kessler.H"
+#include "ERF_Morrison.H"
+#include "ERF_WSM6.H"
+#include "ERF_SatAdj.H"
+#include "ERF_Microphysics.H"
+
+/*! \brief Eulerian microphysics interface */
+class EulerianMicrophysics : public Microphysics {
+
+public:
+
+    /*! \brief Null constructor */
+    EulerianMicrophysics () { }
+
+    /*! \brief default destructor */
+    ~EulerianMicrophysics () = default;
+
+    /*! \brief Constructor: create the moisture model */
+    EulerianMicrophysics (const int& nlev, /*!< Number of AMR levels */
+                          const MoistureType& a_model_type /*!< moisture model */)
+    {
+        AMREX_ASSERT( Microphysics::modelType(a_model_type) == MoistureModelType::Eulerian );
+        m_moist_model.resize(nlev);
+        if (a_model_type == MoistureType::SAM ||
+            a_model_type == MoistureType::SAM_NoIce ||
+            a_model_type == MoistureType::SAM_NoPrecip_NoIce) {
+            SetModel<SAM>();
+        } else if (a_model_type == MoistureType::Kessler ||
+                   a_model_type == MoistureType::Kessler_NoRain) {
+            SetModel<Kessler>();
+        } else if (a_model_type == MoistureType::Morrison ||
+                   a_model_type == MoistureType::Morrison_NoIce) {
+            SetModel<Morrison>();
+        } else if (a_model_type == MoistureType::WSM6) {
+            SetModel<WSM6>();
+        } else if (a_model_type == MoistureType::SatAdj) {
+            SetModel<SatAdj>();
+        } else if (a_model_type == MoistureType::None) {
+            SetModel<NullMoist>();
+        } else {
+            amrex::Abort("EulerianMicrophysics: Dont know this moisture_type!") ;
+        }
+    }
+
+    /*! \brief Define the moisture model */
+    void Define (const int& lev, /*!< AMR level */
+                 SolverChoice& sc /*!< Solver choice object */) override
+    {
+        m_moist_model[lev]->Define(sc);
+    }
+
+    /*! \brief Initialize the moisture model */
+    void Init (const int& lev, /*!< AMR level */
+               const amrex::MultiFab& cons_in, /*!< Conserved state variables */
+               const amrex::BoxArray& grids,   /*!< Grids */
+               const amrex::Geometry& geom,    /*!< Geometry */
+               const amrex::Real& dt_advance,   /*!< Time step */
+               std::unique_ptr<amrex::MultiFab>& z_phys_nd, /*< Nodal z heights */
+               std::unique_ptr<amrex::MultiFab>& detJ_cc    /*< CC Jacobian determinants */) override
+    {
+        m_moist_model[lev]->Init(cons_in, grids, geom, dt_advance,
+                                 z_phys_nd, detJ_cc);
+    }
+
+    /*! \brief finish initializations steps that require flow variables */
+    virtual void FinishInit (const int&,
+                             amrex::MultiFab&,
+                             const amrex::Vector<std::unique_ptr<amrex::MultiFab>>& ) override { }
+
+    /*! \brief Advance the moisture model for one time step */
+    void Advance (const int& lev, /*!< AMR level */
+                  const amrex::Real& dt_advance, /*!< Time step */
+                  const int&, /*!< iteration number */
+                  const amrex::Real&, /*!< current time */
+                  const SolverChoice &solverChoice, /*!< Solver choice object */
+                  amrex::Vector<amrex::Vector<amrex::MultiFab>>&, /*!< Dycore state variables */
+                  const amrex::Vector<std::unique_ptr<amrex::MultiFab>>&, /*!< terrain */
+                  const amrex::GpuArray<ERF_BC, AMREX_SPACEDIM*2>& ) override
+    {
+        m_moist_model[lev]->Advance(dt_advance, solverChoice);
+    }
+
+    /*! \brief update microphysics variables from ERF state variables */
+    void Update_Micro_Vars_Lev (const int& lev, /*! AMR level */
+                                amrex::MultiFab& cons_in /*!< Conserved state variables */) override
+    {
+        m_moist_model[lev]->Update_Micro_Vars(cons_in);
+    }
+
+    /*! \brief update ERF state variables from microphysics variables */
+    void Update_State_Vars_Lev (const int& lev, /*!< AMR level */
+                                amrex::MultiFab& cons_in, /*!< Conserved state variables */
+                                const amrex::MultiFab& z_phys_nd /*!< Nodal terrain heights */) override
+    {
+        m_moist_model[lev]->Update_State_Vars(cons_in, z_phys_nd);
+    }
+
+    /*! \brief get pointer to a moisture variable */
+    amrex::MultiFab* Get_Qmoist_Ptr (const int& lev, /*!< AMR level */
+                                     const int& varIdx /*!< moisture variable index */) override
+    {
+        return m_moist_model[lev]->Qmoist_Ptr(varIdx);
+    }
+
+    /*! \brief get the number of moisture model variables */
+    int Get_Qmoist_Size (const int& /* lev */) override
+    {
+        return m_moist_model[0]->Qmoist_Size();
+    }
+
+    /*! \brief get the number of  microphysics conserved moist (water-related) state variables */
+    int Get_Qstate_Moist_Size () override
+    {
+        return m_moist_model[0]->Qstate_Moist_Size();
+    }
+
+    /*! \brief get the number of  microphysics conserved non-moist (non-water, i.e., other vapor/condensed species) state variables */
+    int Get_Qstate_NonMoist_Size () override
+    {
+        return m_moist_model[0]->Qstate_NonMoist_Size();
+    }
+
+    /*! \brief get the indices and names of moisture model variables for restart
+               at a given level */
+    void Get_Qmoist_Restart_Vars (const int a_lev, /*!< level */
+                                  const SolverChoice& a_sc, /*!< Solver choice object */
+                                  std::vector<int>& a_idx, /*!< indices */
+                                  std::vector<std::string>& a_names /*!< names */ ) const override
+    {
+        m_moist_model[a_lev]->Qmoist_Restart_Vars(a_sc, a_idx, a_names);
+    }
+
+    /*! \brief Returns a list of additional plot variable names */
+    virtual void GetPlotVarNames (amrex::Vector<std::string>& a_vec) const override
+    {
+        m_moist_model[0]->GetPlotVarNames(a_vec);
+    }
+
+    /*! \brief Fills in a MultiFab for plotting */
+    virtual void GetPlotVar (const std::string& a_name,
+                             amrex::MultiFab& a_mf,
+                             const int a_lev) const override
+    {
+        m_moist_model[a_lev]->GetPlotVar(a_name, a_mf);
+    }
+
+    /*! \brief Populates dz_min in micro model for precipitation */
+    virtual void Set_dzmin (const int a_lev,
+                            const amrex::Real dz_min) const override
+    {
+        m_moist_model[a_lev]->Set_dzmin(dz_min);
+    }
+
+    /*! \brief Populates real_width in micro model for box limiting */
+    virtual void Set_RealWidth (const int a_lev,
+                                const int real_width) const override
+    {
+        m_moist_model[a_lev]->Set_RealWidth(real_width);
+    }
+
+protected:
+
+    /*! \brief Create and set the specified moisture model */
+    template<class NewMoistModel>
+    void SetModel ()
+    {
+        for (int lev(0); lev<m_moist_model.size(); ++lev) {
+            m_moist_model[lev] = std::make_unique<NewMoistModel>();
+        }
+    }
+
+private:
+    amrex::Vector<std::unique_ptr<NullMoist>> m_moist_model; /*!< moisture model */
+};
+#endif

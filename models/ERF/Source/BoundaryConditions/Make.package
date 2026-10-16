@@ -1,0 +1,27 @@
+CEXE_sources += ERF_BoundaryConditionsXvel.cpp
+CEXE_sources += ERF_BoundaryConditionsYvel.cpp
+CEXE_sources += ERF_BoundaryConditionsZvel.cpp
+CEXE_sources += ERF_BoundaryConditionsCons.cpp
+CEXE_sources += ERF_BoundaryConditionsBaseState.cpp
+CEXE_sources += ERF_BoundaryConditionsBndryReg.cpp
+
+CEXE_headers += ERF_SurfaceLayer.H
+CEXE_sources += ERF_SurfaceLayer.cpp
+
+CEXE_sources += ERF_FillPatch.cpp
+CEXE_sources += ERF_FillCoarsePatch.cpp
+CEXE_sources += ERF_FillIntermediatePatch.cpp
+CEXE_sources += ERF_FillBdyCCVels.cpp
+CEXE_sources += ERF_FillPatcher.cpp
+
+CEXE_sources += ERF_PhysBCFunct.cpp
+CEXE_headers += ERF_PhysBCFunct.H
+CEXE_headers += ERF_FillPatcher.H
+
+CEXE_headers += ERF_TimeInterpolatedData.H
+
+CEXE_headers += ERF_MOSTAverage.H
+CEXE_sources += ERF_MOSTAverage.cpp
+
+CEXE_headers += ERF_MOSTStress.H
+CEXE_headers += ERF_MOSTWaveDrag.H

@@ -1,0 +1,35 @@
+# CRESCENT Algorithm Verification: L0 Standalone Test
+#
+# Purpose: Verify that adding the CRESCENT algorithm flag does not change the
+# single-domain solver path.
+
+# Simulation time control
+max_step = 10
+stop_time = 0.1
+
+# Domain configuration
+amr.n_cell = 128 128 1
+geometry.prob_extent = 200.0 200.0 10.0
+geometry.is_periodic = 1 1 0
+amr.max_level = 0
+
+# CRESCENT solver parameters
+crescent.dt_override = 0.01
+crescent.perturbation_order = 3
+crescent.use_crescent_algorithm = 0
+
+# Wave parameters - JONSWAP spectrum
+crescent.wave_type = "jonswap"
+crescent.wind_speed_10m = 10.0
+crescent.fetch = 50000.0
+crescent.wave_steepness = 0.1
+crescent.beta1_filter = 9.0
+crescent.beta2_filter = 12.0
+crescent.initial_angle = 0.0
+crescent.angle_spread = 1.5
+
+# Output configuration
+crescent.plot_file = "CRESCENT_L0_test"
+crescent.plot_int = 10
+crescent.tecplot_int = 10
+crescent.verbosity = 2

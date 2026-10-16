@@ -1,0 +1,10 @@
+# WindSCAPE jobs on dane (CPU). The runner template (.job_on_dane) sruns
+# TEST_SCRIPT (.gitlab/LC/windscape_test.sh) inside the pipeline's node
+# allocation. MODULE_LIST mirrors ERF's dane toolchain plus FFTW, which
+# CRESCENT's spectral solver needs through AMReX's FFT backend; adjust the
+# FFTW module name/version to what `module avail fftw` shows on dane.
+
+dane_gcc_12_1_1:
+  variables:
+    MODULE_LIST: cmake/3.30.5 ninja/1.11.1 gcc/12.1.1 fftw/3.3.10
+  extends: .job_on_dane

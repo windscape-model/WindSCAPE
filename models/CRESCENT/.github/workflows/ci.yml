@@ -1,0 +1,69 @@
+name: CI
+
+# Build CRESCENT and run a short smoke test on every push to main, on pull
+# requests targeting main, and on manual dispatch.
+#
+# The bit-for-bit regression checks of the development repository are not run
+# here: their reference outputs are large and kept outside this repository. CI
+# verifies that the solver configures, compiles and completes a short run.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-smoke:
+    name: Build and smoke test (Ubuntu, Release)
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      CCACHE_MAXSIZE: 500M
+    steps:
+      - name: Checkout (with pinned AMReX submodule)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            cmake g++ make \
+            libopenmpi-dev openmpi-bin \
+            libfftw3-dev libfftw3-mpi-dev \
+            ccache
+
+      - name: Restore ccache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.ccache
+          key: ccache-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            ccache-${{ runner.os }}-
+
+      - name: Configure
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=mpicc \
+            -DCMAKE_CXX_COMPILER=mpicxx \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+
+      - name: Build crescent
+        run: cmake --build build --target crescent -j "$(nproc)"
+
+      - name: Smoke test (single-domain Stokes, few steps, no file output)
+        run: |
+          mkdir -p ci_smoke && cd ci_smoke
+          ../build/Exec/crescent ../test_case/inputs_stokes_test \
+            max_step=3 crescent.plot_int=-1 crescent.tecplot_int=-1
+          echo "smoke run completed successfully"

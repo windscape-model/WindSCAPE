@@ -1,0 +1,13 @@
+max_step = 0
+
+amr.n_cell = 8 8 1
+amr.max_level = 0
+geometry.prob_extent = 8.0 8.0 1.0
+geometry.is_periodic = 1 1 0
+
+crescent.wave_type = "jonswap"
+crescent.wind_speed_10m = 10.0
+crescent.fetch = 10000.0
+crescent.dt_override = 0.0
+crescent.plot_int = -1
+crescent.tecplot_int = -1

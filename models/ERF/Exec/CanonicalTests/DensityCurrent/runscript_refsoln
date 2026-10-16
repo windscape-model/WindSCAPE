@@ -1,0 +1,12 @@
+#!/bin/bash
+#SBATCH --account=erf
+#SBATCH --time=0:30:00
+#SBATCH --job-name=DensityCurrent_ref_soln
+#SBATCH --ntasks=288
+# Timing with 288 CPU cores on NREL Eagle HPC: 427.1469369 s
+
+# load environment
+. ~/.bash_profile
+erf-env
+
+srun -n $SLURM_NTASKS --cpu_bind=cores ./density_current inputs_refsoln &> log

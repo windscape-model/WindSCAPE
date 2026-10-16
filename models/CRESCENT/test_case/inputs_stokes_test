@@ -1,0 +1,30 @@
+# Test case input file for Stokes wave test
+#
+# This configuration provides a deterministic test case with Stokes wave
+# initialization.
+
+# Simulation time control
+max_step = 2
+stop_time = 2.0
+
+# Domain configuration
+amr.n_cell = 128 64 1
+geometry.prob_extent = 200.0 100.0 10.0
+geometry.is_periodic = 1 1 0
+amr.max_level = 0
+
+# CRESCENT solver parameters
+crescent.dt = 0.01
+crescent.perturbation_order = 3
+
+# Wave parameters - Stokes wave configuration
+crescent.wave_type = "stokes"
+crescent.wave_mode_x = 5
+crescent.wave_steepness = 0.1
+crescent.beta1_filter = 8.0
+crescent.beta2_filter = 12.0
+
+# Output configuration
+crescent.plot_file = "stokes_test"
+crescent.plot_int = 5
+crescent.verbosity = 2

@@ -1,0 +1,87 @@
+# Stable geostrophic boundary layer over the wave: surface cooling, wave drag with stability functions
+
+# Run length
+max_step  = 5000000
+stop_time = 100010
+
+# Domain and mesh
+amr.max_grid_size_x       = 96
+amr.max_grid_size_y       = 60
+amr.max_grid_size_z       = 160
+amr.max_level             = 0
+amr.n_cell                = 480 480 160
+erf.grid_stretching_ratio = 1.023
+erf.initial_dz            = 0.5
+fabarray.mfiter_tile_size = 1024000 1024000 1024000
+geometry.is_periodic      = 1 1 0
+geometry.prob_extent      = 1200. 1200. 800.
+geometry.prob_lo          = 0.0 0.0 0.0
+
+# Wave surface and initial state
+erf.init_type            = input_sounding
+erf.input_sounding_file  = input_sounding_geo
+erf.prob_name            = "Moving Terrain"
+erf.terrain_smoothing    = 2
+erf.terrain_type         = MovingFittedMesh
+prob.Ampl                = 0.8
+prob.T_0                 = 300.
+prob.custom_terrain_type = "MovingSineWaveRamp"
+prob.init_pert_amp       = 0.5
+prob.init_ustar          = 0.0
+prob.init_z0             = 0.0002
+prob.wavelength          = 50.0
+
+# Boundaries
+erf.most.wave_drag                = 1
+erf.most.wave_drag_stability      = 1
+erf.most.wave_drag_surf_temp      = 300.0
+erf.most.wave_drag_surf_temp_rate = -6.944e-5
+erf.most.wave_drag_theta_mode     = surface_temp
+erf.most.wave_drag_z0h            = 2.0e-4
+erf.most.z0                       = 0.0002
+erf.most.zref                     = 0.25
+zhi.type                          = "SlipWall"
+zlo.type                          = "surface_layer"
+
+# Physics
+erf.Cs                     = 0.18
+erf.abl_driver_type        = GeostrophicWind
+erf.abl_geo_wind           = 10. 0. 0.
+erf.abl_pressure_grad      = 0. 0. 0.
+erf.coriolis_3d            = 0
+erf.dryscal_horiz_adv_type = Centered_2nd
+erf.dryscal_vert_adv_type  = Centered_2nd
+erf.dycore_horiz_adv_type  = Centered_2nd
+erf.dycore_vert_adv_type   = Centered_2nd
+erf.latitude               = 43.3
+erf.les_type               = "Smagorinsky"
+erf.molec_diff_type        = None
+erf.rayleigh_damp_T        = 1
+erf.rayleigh_damp_U        = 1
+erf.rayleigh_damp_V        = 1
+erf.rayleigh_damp_W        = 1
+erf.rayleigh_dampcoef      = 0.003
+erf.rayleigh_damping_type  = SlowExplicit
+erf.rayleigh_zdamp         = 300.
+erf.rotational_time_period = 86164
+erf.use_coriolis           = 1
+erf.use_gravity            = true
+
+# Time integration
+erf.beta_s             = 0.3
+erf.fixed_dt           = 0.02
+erf.fixed_mri_dt_ratio = 8
+erf.substepping_type   = Implicit
+
+# Output
+amr.v              = 0
+erf.check_file     = chk
+erf.check_for_nans = 1
+erf.check_int      = 50000
+erf.data_log       = "surf" "mean" "flux" "subgrid"
+erf.plot_file_1    = plt
+erf.plot_int_1     = 2500
+erf.plot_vars_1    = density x_velocity y_velocity z_velocity pressure theta pert_pres pert_dens detJ
+erf.profile_int    = 2500
+erf.sum_interval   = 1000
+erf.v              = 0
