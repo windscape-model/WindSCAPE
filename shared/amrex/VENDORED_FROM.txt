@@ -1,0 +1,4 @@
+Vendored from: github.com/AMReX-Codes/amrex (public)
+Version: 25.12
+Local modifications: per-instance ParmParse input namespace and per-instance Geometry
+  (mesh-layer patches that let two AmrCore solvers run as independent peers in one process).

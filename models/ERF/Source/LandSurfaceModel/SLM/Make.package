@@ -1,0 +1,2 @@
+CEXE_sources += ERF_SLM.cpp
+CEXE_headers += ERF_SLM.H

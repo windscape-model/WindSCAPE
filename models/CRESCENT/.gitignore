@@ -1,0 +1,73 @@
+# Build directory
+build
+/build_sanitize/
+CMakeFiles/
+CMakeCache.txt
+compile_commands.json
+
+# Ad hoc executable-development cases; curated sample inputs live in test_case/.
+/Exec/inputs_*
+/Exec/verify_*.py
+
+# Test output directories
+nested_crescent_rk4_test*
+c3_repair_test*
+crescent_single_box_test*
+crescent_phase3_long*
+multibox_long_test*
+*.old.*
+test_movie_output/
+filter_diag_test/
+test_c3_fix_verification/
+test_tanh_squared/
+test_verification_200steps/
+archive_old_test_outputs/
+validation_interpolation_fix/
+test_jonswap/
+test_case/
+
+# Log files
+*.log
+
+# Data files
+*.csv
+*.dat
+*.png
+*.mp4
+*.lpk
+
+# AMReX / CRESCENT generated plotfiles
+test_jonswap/**/jonswap[0-9][0-9][0-9][0-9][0-9]/
+test_jonswap/**/jonswap_movie[0-9][0-9][0-9][0-9][0-9]/
+test_jonswap/**/plt[0-9][0-9][0-9][0-9][0-9]/
+test_jonswap/**/chk[0-9][0-9][0-9][0-9][0-9]/
+
+# Backup files
+Backtrace.*
+*.backup
+*.backup2
+*.bak
+*.bak2
+*.old
+*.swp
+
+# Python scripts (if you want to track them, remove this line)
+# *.py
+
+# macOS
+.DS_Store
+
+# Curated in-repo test cases
+!test_case/
+test_case/*
+!test_case/README.md
+!test_case/inputs_CRESCENT_L0_only
+!test_case/inputs_nested_jonswap_init
+!test_case/inputs_stokes_test
+
+# Run output directories
+runs/
+
+# Python bytecode
+__pycache__/
+*.pyc

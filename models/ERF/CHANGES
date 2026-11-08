@@ -1,0 +1,365 @@
+#26.05
+    -- Progress towards data assimilation (#3142)
+
+    -- Noah-MP fixes (#3147, 2946)
+
+    -- RRTMGP memory reduction (#3132)
+
+    -- SDM refactor (#3114, 3082)
+
+    -- WSM6 start (#3101)
+
+#26.04
+    -- Moving Terrain substep fixes (#3083)
+    
+    -- Implicit moisture diffusion (#3061)
+
+    -- Generalize precision (#3059)
+#26.03
+    -- Metgrid revamp (#2944)
+
+    -- Move to one executable (#2941,2939, 2936, 2934)
+
+    -- RRTMGP restart (#2938)
+
+    -- Anelastic AMR bug fix (#2933)
+
+    -- Real BCs with bndry reg (#2908)
+
+#26.02
+    -- BDY nudging revamp (#2851)
+
+    -- Refactor problem set up approach (#2848, 2846)
+
+    -- Super droplet method (#2820)
+
+    -- era5 bulk surface (#2826)
+
+    -- RRTMGP fixes (#2841, 2838)
+
+#26.01
+    -- Fixes for MLMG solver (#2814)
+
+    -- EB fixes (#2807, 2810, 2812, 2813)
+
+    -- Surface layer zref MF (#2791)
+
+    -- Poisson solve set up fix (#2802)
+
+#25.12
+    -- Corrections for projection (#2777)
+
+    -- ERA pathway with AMR (#2766)
+
+    -- Corrections for EB advection/diffusion (#2765)
+
+    -- Fixes to BDY region (#2750, 2770, 2778)
+    
+#25.11
+    -- Kokkos GPU fix (#2667)
+
+    -- AMR projection fixes( #2656)
+
+    -- SHOC integration (#2660,2642,2624)
+
+    -- Implicit vertical diffusion (#2617)
+
+    -- EB two-way coupling (#2640)
+
+#25.10
+    -- Different dt for Line and plane sampler (#2570)
+
+    -- Read wrflowinp slice as needed (#2569)
+
+    -- Acoustic substepping pressure with moisture (#2566)
+
+    -- Fix restart with StretchDz (#2568)
+
+    -- MYJ PBL scheme (#2524)
+
+#25.08
+    -- 2D plotfile capability (#2463)
+
+    -- Couple RRTMGP & NOAH-MP (#2442)
+
+    -- GMRES fixes (#2439)
+
+    -- Init from WRFInput fixes (#2436)
+
+    -- Add kokkos and remove yakl submodule (#2429)
+
+    -- Multi-level FFT (#2433)
+
+    -- Moist stratification effect on turbulence models (#2407)
+    
+#25.07
+    -- Enable initialization from netcdf file (#2390)
+
+    -- Read & interpolate weather data onto ERF mesh (#2391, 2377)
+
+    -- EB diffusion progress (#2379)
+
+    -- Fix WENO conservation (#2387)
+
+    -- Correction to Bomex (#2384)
+
+    -- Correct Poisson solve with terrain (#2371)
+
+    -- Surface layer moisture fluxes (#2360)
+
+#25.06
+    -- Optimize diffusion (#2356, 2355, 2351, 2349, 2348, 2346)
+
+    -- Fix initial projection w/ anelastic (#2344)
+
+    -- EB pressure gradient least squares (#2339)
+
+    -- Converter for AMReX --> Netcdf plotfiles (#2328)
+
+    -- RRTMGP radiation fixes (#2330)
+
+    -- Allow for sources to be added in acoustic steps (#2293, 2320)
+    
+#25.05
+    -- EB interpolation of momentum (#2283)
+
+    -- Metric discrete cancellation (#2280)
+
+    -- Init from NCFile (#2281)
+
+    -- Read WRF BDY in time slices (#2271)
+
+    -- EB interp scalars (#2257)
+
+    -- SurfaceLayer replaces MOST (#2216)
+
+    -- LES diffusion limiter (#2222)
+
+#25.04
+    -- Fix anelastic RK2 for slow vars (#2226)
+
+    -- Add init type NCFile (#2223)
+
+    -- Fix epoch time on GPU (#2221)
+
+    -- State redistribution w/ EB (#2217)
+
+    -- Qmoist only holds micro specific vars now (#2214)
+
+    -- Adaptive time step at start up (#2210)
+
+    -- NOAH-MP LSM (#2196) 
+
+#25.03
+    -- Fix interpolation when reading terrain from file (#2164)
+ 
+    -- Make z_phys_nd/cc by default (#2155)
+
+    -- Start for Morrison moisture model (#2154)
+
+    -- MYNN-EDMF initial code (#2131)
+
+    -- Clean up and fix init_type (#2146)
+
+    -- Start EB with staggered grids (#2123, 2120)
+
+    -- Add qv_0 to base state (#2114)
+    
+#25.01
+    -- AMReX submodule set to (b3f6738)
+
+    -- Higher order metgrid interpolation (#2037, 1630)
+ 
+    -- Wall distance RANS start (#2031)
+
+    -- Terrain with wind farm param (#2029, 1998)
+
+    -- NOAH-MP interface start (#1994)
+
+    -- Sat adjustment moisture model (#2020)
+
+    -- Immersed forcing method (#2017)
+
+    -- Bug fix for theta_v in PBL and output ((#2016, 2015)
+
+# 24.11
+    -- AMReX submodule set to 24.11 release hash (4a6e7c8)
+
+    -- AMR functionality (#1916-1920)
+
+    -- GAD functionality (#1912, #1875)
+
+    -- Remove QKE (#1905)
+
+    -- NOAH-MP interface (#1835)
+
+    -- Line and plane sampling (#1897)
+
+    -- AMReX & KOKKOS docs (#1889)
+ 
+# 24.10
+    -- Add WENO7 advection operators (#1858)
+
+    -- Multi-level inflow plane capability (#1851)
+
+    -- Fast integrator fill bug fix (#1853)
+
+    -- Refactor set/nudging with real BDYs (#1841)
+
+    -- First pass at GAD sources (#1839)
+
+    -- Anelastic with FFT option for Poisson eq (#1838)
+    
+# 24.09
+    -- AMReX submodule set to 24.09 release hash (74127d6)
+
+    -- Arbitrary number of scalars similar to WRF chem (#1782)
+
+    -- PBL reorganization and additions for hurricane sims (#1756)
+
+    -- Vertical decomposition (#1766)
+
+    -- Upstream velocity computation for actuator disk (#1751)
+
+    -- High order diffusion stencil at all Dirichlet faces (#1753)
+
+    -- MOST stress rotations with terrain (#1739)
+
+    -- Anlestic option (#1745)
+
+# 24.08
+    -- AMReX submodule set to 24.08 release hash (ac5dde3)
+
+    -- Fix diffusion stencil with Dirichlet boundary (#1723)
+
+    -- Turbulent inflow perturbation (#1722/#1721/#1716/#1695)
+
+    -- BOMEX regtest (#1714/#1707)
+
+    -- Output SGS fluxes (#1713)
+
+    -- Wind model for SAD (#1667)
+
+    -- ERF container (#1703)
+
+    -- Inflow face prescribed from a data file (#1698)
+
+    -- YSU PBL updates (#1694)
+
+# 24.06
+    -- AMReX submodule set to 24.06 release hash (f141191)
+
+    -- SAM microphysics corrections (#1634/#1629)
+
+    -- Open boundaries with viscous terms (#1615)
+
+    -- Incompressible pathway (#1612/#1613)
+
+# 24.05
+    -- AMReX submodule set to 24.05 release hash (76d09f5)
+    
+    -- Explict MOST as runtime option (#1605)
+    
+    -- High order extrapolation (#1602)
+
+    -- Various radiation module fixes (#1601 etc)
+
+    -- Correct FITCH (#1595)
+
+    -- Read entire Lat/Lon data from netcdf (#1589)   
+
+# 24.04
+    -- AMReX submodule set to 24.04 release hash (bb7d5cf)
+
+    -- Start of EB functionality (#1541)
+
+    -- Start of YSU PBL scheme (#1540)
+
+    -- Open boundary condition (#1524)
+
+    -- Incompressible pathway fixes (#1525)
+
+    -- Wind farm parametrization (#1511)
+
+    -- Explicit MOST stress pathway (#1472)
+    
+# 24.03
+    -- AMReX submodule set to 24.03 release hash (d737886)
+
+    -- Plot rain accumulation (#1478)
+
+    -- Remove FastEddy completely (#1483)
+
+    -- Rain accumulation capability (#1474)
+
+    -- Remove the FastEddy model since it coincides with Kessler (#1473)
+
+    -- Input_sounding with moisture new HSE balance (#1469)
+
+    -- SAM microphysics re-write for ERF dycore (#1461/#1447)
+
+    -- Two-way coupled AMR (#1458)
+
+    -- Numerical diffusion bug fix (#1451)
+
+# 24.02
+    -- AMReX submodule set to 24.02 release hash (52393d3)
+
+    -- WRF init fix for top boundary (#1423)
+
+    -- Fix debug GPU with particles (#1422)
+
+    -- Remove all elixirs with FABs (#1418)
+
+    -- Framework for LSMs (#1389)
+
+    -- Fix lateral boundary forcing (#1408)
+
+    -- ConstantAlpha with turbulence model (#1391)
+
+    -- Outflow boundary bug fix (#1374)
+
+    -- Generalized particle interface (#1366)
+    
+# 24.01
+    -- AMReX submodule set to 24.01 release hash (a068330)
+    
+    -- Addition of more moisture vars (#1350)
+
+    -- Make PBL model terrain aware (#1348)
+
+    -- Moisture is no longer a compile time option (#1334)
+
+    -- Radiation cleanup (#1318)
+
+    -- Enable multiple moisture models (#1303)
+        
+# 23.12
+    -- AMReX submodule set to 23.12 release hash (9b733ec)
+
+    -- Inclusion of Kessler microphysics option (#1324)
+
+    -- Fix for particles with redistribute call (#1314)
+
+    -- Inclusion of radiation (#1311)
+
+    -- Inclusion of refluxing for two-way coupling (#1289)
+
+    -- Metgrid initialization with SST and LandMask (#1280)
+
+# 23.11
+    -- AMReX submodule set to 23.11 release hash (ae7b64b)
+
+    -- Bug fix with vertical grid stretching and MOST (#1275)
+
+    -- Bug fix with negative K_turb below surface and MYNN2.5 PBL model (#1271)
+
+    -- Correction to equation of state with moisture (#1263)
+
+    -- Generalized multi-level sponge zones. This allows for nudging of fine solution
+       towards coarse solution with complex box arrays. (#1233)
+
+# 23.10
+    -- First release since JOSS paper. Too many key ERF PRs to summarize.
+
+    -- AMReX submodule set to 23.10 release hash (388738d)

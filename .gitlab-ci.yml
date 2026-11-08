@@ -1,0 +1,70 @@
+# WindSCAPE CI on LLNL LC GitLab (Jacamar runners), following the ERF LC layout
+# (.gitlab/LC in models/ERF): a parent pipeline that triggers one child pipeline
+# per machine; each child allocates a node, runs .gitlab/LC/windscape_test.sh
+# under srun, and releases the allocation. See Documentation/CI.md for the test
+# tiers the script implements.
+#
+# Machine-specific knobs live in .gitlab/LC/runners/<machine>.yml and
+# .gitlab/LC/jobs/<machine>.yml. Project-specific knobs are below; ALLOC_BANK is
+# the one most likely to need adjusting.
+
+variables:
+  # Jacamar build area on parallel scratch (see ERF's notes on migrating it)
+  CUSTOM_CI_BUILDS_DIR:
+    value: "/p/vast1/$USER/gitlab-runner/windscape"
+    expand: false
+  JACAMAR_LIMITED_DIR: 1
+
+  # WindSCAPE vendors ERF/CRESCENT/AMReX as plain files: no submodules to fetch.
+  GIT_DEPTH: 1
+
+  DEFAULT_BRANCH: main
+
+  ALLOC_NAME: ${CI_PROJECT_NAME}_ci_${CI_PIPELINE_ID}
+  ALLOC_QUEUE: pci
+  ALLOC_BANK: wwinter
+
+  TEST_SCRIPT: .gitlab/LC/windscape_test.sh
+
+  # Optional golden-plotfile repo for the coupled regression gate (Tier 1).
+  # Leave WINDSCAPE_GOLD_REPO empty to run build + smoke tiers only.
+  WINDSCAPE_GOLD_REPO: ""
+  WINDSCAPE_GOLD_GIT_REF: main
+
+workflow:
+  rules:
+    # Test the default branch
+    - if: $CI_COMMIT_BRANCH == $DEFAULT_BRANCH
+    # Do not test if the commit message contains [skip-ci]
+    - if: $CI_COMMIT_MESSAGE =~ /\[skip-ci\]/
+      when: never
+    # Test if the commit message contains [run-ci]
+    - if: $CI_COMMIT_MESSAGE =~ /\[run-ci\]/
+    # Test merge requests
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    # Do not test plain pushes to other branches
+    - if: $CI_PIPELINE_SOURCE == "push"
+      when: never
+    # Default to always test
+    - when: always
+
+stages:
+  - build-and-test
+
+# Template for parent pipelines that create a per-machine sub-pipeline
+.build-and-test:
+  stage: build-and-test
+  trigger:
+    include:
+      - local: '.gitlab/LC/runners/${CI_MACHINE}.yml'
+      - local: '.gitlab/LC/jobs/${CI_MACHINE}.yml'
+    strategy: depend
+    forward:
+      pipeline_variables: true
+
+include:
+  # Required on LC with GitLab 17+ (hpc.llnl.gov technical bulletin 568)
+  - project: 'lc-templates/id_tokens'
+    file: 'id_tokens.yml'
+  # Creates the parent pipeline entries for each machine
+  - local: '.gitlab/LC/pipelines.yml'

@@ -1,0 +1,31 @@
+WINDSCAPE — bundled components and their licenses
+==================================================
+
+WINDSCAPE is a superproject that vendors three components as plain files. Each
+vendored subtree RETAINS ITS OWN LICENSE (do not relicense the subtrees). The
+root LICENSE applies to the WINDSCAPE-original code.
+
+  Component      Path             License                          Where
+  ---------      ----             -------                          -----
+  AMReX          shared/amrex     BSD-3-Clause                     shared/amrex/LICENSE, shared/amrex/NOTICE
+  ERF            models/ERF       BSD-3-Clause                     models/ERF/LICENSE.md, models/ERF/copyright.txt
+  CRESCENT       models/CRESCENT  BSD-3-Clause, LLNL-CODE-2024694  models/CRESCENT/LICENSE
+
+  WINDSCAPE-     Coupler/,        BSD-3-Clause (see ./LICENSE)     ./LICENSE
+  original code  CMakeLists.txt,  LLNL-CODE-2024697
+                 Documentation/,
+                 tests/,
+                 local AMReX
+                 modifications
+
+Notes
+-----
+* AMReX modifications. The two local patches to AMReX (a per-instance input
+  namespace and a per-instance physical geometry, both confined to the mesh
+  layer) are redistributed under AMReX's BSD-3-Clause; AMReX's LICENSE and NOTICE
+  are retained in shared/amrex/.
+
+* Release numbers. CRESCENT version 1.0 is released by Lawrence Livermore
+  National Laboratory under LLNL release number LLNL-CODE-2024694 and WINDSCAPE
+  version 1.0 under LLNL release number LLNL-CODE-2024697; later versions
+  inherit these licenses.

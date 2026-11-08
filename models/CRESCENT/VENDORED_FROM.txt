@@ -1,0 +1,92 @@
+Vendored from: CRESCENT high-order-spectral wave solver, Lawrence Livermore National Laboratory.
+  Released under the BSD 3-Clause License (LLNL-CODE-2024694); the LICENSE file is vendored.
+Branch: release/v1.1-prep of the standalone repository: the CRESCENT 1.1 release tree, i.e. main
+  faac11d plus the release-preparation commit, which removes the manuscript and the research
+  material and adapts the documents, and the pressure fix 79a4da4 of main (main was named
+  feature/l1-consistency until 2026-10-03).
+Commit: fdf654638cf37570aba7dc4c4f0eecaa2036a930 (same tree as the CRESCENT 1.1 release)
+Vendored: 2026-10-16. Last step: the correction-field stage applies an external pressure once
+  (release tree b34df45 -> fdf6546 = main 79a4da4 on the release branch): the stage formed its
+  source with the interpolated parent tendency, which already contains the parent pressure, and
+  then subtracted the child pressure, so a nonzero pressure entered the child twice; 1 file,
+  Source/nested/CRESCENT_NestedCorrectionField.cpp, copied. The coupled cases use the total-field
+  coupling, so their results are unchanged. Before that, 2026-10-05: the CRESCENT commits since
+  2026-08-09 got new IDs when their messages
+  lost the co-author and session lines (2026-10-05): release tree 1cbedcc -> b34df45 (main 762c03b ->
+  faac11d); the retired-option message names f39cacf (formerly aac4c85); no other change. Before that,
+  2026-10-03: release tree 8defba5 -> 1cbedcc (main 34476c0 -> 762c03b): the
+  unrestricted correction-field form is retired (crescent.ccf_band_restrict accepts only 1; the
+  projection onto the added band is part of CCF), the warning is gone, a CTest rejects 0, and the
+  documents describe one CCF form; 14 files, CRESCENT_SetupParameters.cpp (adapter footprint) by its
+  diff, the others copied. Before that: release tree 54c07bf -> 8defba5 (main 977f287 -> 34476c0): the
+  correction-field default is the band-restricted correction (crescent.ccf_band_restrict = 1, the
+  manuscript's method), and the startup warning names only the unrestricted correction (= 0);
+  8 files (CRESCENT_NestedConfig.H, CRESCENT_NestedAlgorithmInputs.cpp, the unit test, five
+  documents). Before that, the same day: the vendored content became the CRESCENT 1.1 release tree
+  instead of main without the manuscript material. Removed: 70 research files (tools/analysis,
+  tools/ab, the manuscript and data-maintenance scripts, test_case/validation,
+  test_case/regression, and the result documents NESTING_ALGORITHM_ASSESSMENT.md,
+  CRESCENT_WAVE_VALIDATION.md and INDEPENDENT_AUDIT_2026-08-19.md). Taken from the release
+  tree: README.md, docs/README.md, the overview, the walkthrough, test_case/README.md,
+  .gitignore and the CI file (inert here). No compiled file changes. Before that, the same day:
+  documentation update f15a84e -> 977f287 (6 commits; the README explains how to build, run and
+  configure the code and states no validation results; outdated statements corrected).
+Code sync of the same day to f15a84e (standalone sync; 31 commits since the previous vendored state f39cacf:
+  the 2026-10-02 code review (22 commits): 50 legacy or exploratory switches and the
+  derivative-blend coupling (l1_coupling_mode = 0) retired (a deck may still state the former
+  default; any other value stops the run and names commit f39cacf); the seven context classes
+  merged into LevelContext/SolverContext over one SolverState; the DNO plumbing folded into one
+  physics::computeVerticalVelocity; the one-function setup and step files merged; the
+  correction-field stage split into its steps; the empty problem class (Exec/Prob.*,
+  Source/shared/ProbBase.H, amrex_probinit) removed; bit-for-bit speedups (tile fix, cached
+  spectral weight tables, per-sub-cell prolongation weights, one parent derivative bundle per
+  step, stage-0 reuse; 100-step CPU cycles NS PTF 2.2x fewer, IM CCF band-restricted 1.6x);
+  seven unread research CSVs no longer written. Then the A/B harness tools/ab, the manuscript
+  rerun and compare tools, the JONSWAP phases drawn on the host so that GPU runs make the CPU
+  sea (CPU seas bit-for-bit unchanged), and manuscript/doc updates (the CCF specification and
+  the overview now treat the retired switches as retired). The seeded 100-step gate
+  and a 75-case A/B suite are bit-for-bit at every review commit; checkpoint format 10
+  unchanged. Ordinary git merge in a scratch clone (base f39cacf) with 10 conflicts, all in
+  the adapter footprint: the review deleted 7 files that the adapter modified (Exec/Prob.H,
+  Exec/Prob.cpp, ProbBase.H, CRESCENT_SolverAccess.H, CRESCENT_SolverOwnership.H,
+  CRESCENT_ConstructionContext.H, CRESCENT_SetupConstruction.cpp); the adapter was ported to
+  the SolverState/SolverContext interfaces, see Local modifications.)
+Previous sync 2026-09-25 (17 commits since f228bf6: removal of the developer trace logging
+  and research-only diagnostics; the inputs crescent.enable_initial_c3_effect_diagnostic and
+  crescent.enable_nested_initialization_validation removed; checkpoint format 10; the
+  BSD 3-Clause LICENSE (LLNL-CODE-2024694) and the README/doc updates; no conflicts).
+Previous sync 2026-09-04 (91 commits since f65ac7f:
+  the 2026-08 review-driven fixes and default flips (C3 penalty sign, square child cutoffs,
+  tensor-product C3 mask, cell-centered bilinear prolongation, coupled C3 block
+  back-substitution, JONSWAP spectral initialization, Stokes wavevector quadrants, linear RK4
+  RHS memory corruption), the consistent CCF branches (linear, adjustment, transform
+  admissibility, W1 projection), PTF (l1_coupling_mode = 1) as the production nesting default,
+  the nested DNO final projection, complete restart-configuration serialization
+  (CRESCENT_CheckpointConfigIO), the Zakharov Hamiltonian diagnostic, runtime input-contract
+  validation, the CTest unit/contract tests under tests/, and tools/ additions).
+Previous vendored states: standalone f39cacf (2026-09-25); standalone f228bf6 (2026-09-04);
+  standalone f65ac7f (2026-07-17); standalone 5b2b516 (2026-05-26) content plus the coupling
+  adapter (the standalone history was rewritten after 5b2b516, so that sync was a
+  content-level three-way merge; f65ac7f and later are in the current standalone history, so
+  the later syncs were ordinary git merges in a scratch clone).
+Local modifications (re-applied on top): coupling adapter: the prefix constructor
+  CRESCENT(std::string) (AmrCore prefix, and the solver-parameter ParmParse prefix threaded
+  through setup::constructSolverState and setup::readParameters, default "crescent");
+  setAtmosphericPressure, advanceSingleTimestep (advanceAllLevelsForStep +
+  updateTimeStateAfterStep, without the standalone per-step reporting and output), surface
+  field accessors and checkpoint helpers in Source/coupling/CRESCENT_Coupling.cpp; u, v and
+  the vertical velocity in the external exchange views; crescent_static library target for the
+  Coupler; external-AMReX superbuild affordances in CMakeLists.txt (overridable
+  AMREX_LOCATION, out-of-tree add_subdirectory binary dir, guarded find_package(AMReX
+  CONFIG)). The former crescent:: namespacing
+  of ProblemBase/Problem/amrex_probinit is gone with the standalone problem class, and the
+  Coupler no longer compiles a CRESCENT Prob.cpp.
+Vendored content (since 2026-10-03): the CRESCENT release tree, without .gitmodules (AMReX comes
+  from shared/amrex). The manuscript, the validation and regression suites, the analysis and A/B
+  tools and the development records stay in the standalone development repository; neither the
+  CRESCENT release nor WindSCAPE contains them. (Until 2026-10-03 WindSCAPE vendored main minus
+  the manuscript material: manuscript/, AGENTS.md, CLAUDE.md, docs/claude-memory/,
+  docs/JCP_WRITING_STYLE.md, docs/VOCAB_SCREENING_PROMPT.md, docs/DATA_CATALOG.md,
+  docs/MANUSCRIPT_DATA_MAP.md, docs/reviews/, .gitmodules.)
+WindSCAPE additions kept: PARAMETER_REFERENCE.md (refreshed against this sync: the 50 retired
+  switches moved to a Retired inputs table; ccf_band_restrict added).

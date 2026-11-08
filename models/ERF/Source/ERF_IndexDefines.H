@@ -1,0 +1,255 @@
+#ifndef ERF_INDEX_DEFINES_H_
+#define ERF_INDEX_DEFINES_H_
+
+#include <AMReX_REAL.H>
+#include <AMReX_Arena.H>
+
+/**
+ * Definition of indexing parameters
+*/
+
+// This defines the ACTUAL number of non-moisture vars =
+//      rho, rhotheta, rhoKE
+#define NDRY       3
+
+// This defines the ACTUAL number of non-moisture scalar vars
+#define NSCALARS   1
+
+// This defines the MAXIMUM number of moisture vars
+#define NMOIST_max 6
+
+// This is the number of components if using moisture
+// We use this to allocate the 1d arrays of boundary condition types,
+//    but not to allocate actual solution data
+#define NVAR_max (NDRY + NSCALARS + NMOIST_max)
+
+// This is the number of components if we assume there is only one passive scalar
+// We can use this when we assume all passive scalars have the same bc's
+// We also assume (the final "+1" that the base state components have the same bcs)
+#define NBCVAR_max (NDRY + 1 + NMOIST_max + 1)
+
+// This is the number of components if we assume there is only one passive scalar
+// We can use this when we assume all passive scalars have the same diffusion coefficients
+#define NPRIMVAR_max (NDRY + 1 + NMOIST_max)
+
+// Cell-centered state variables
+#define Rho_comp       0
+#define RhoTheta_comp  (Rho_comp+1)
+#define RhoKE_comp     (Rho_comp+2) // for Deardorff LES Model, k-equation RANS, or MYNN PBL Model
+
+#define RhoScalar_comp (RhoKE_comp+1)
+
+#define RhoQ1_comp     (RhoScalar_comp+NSCALARS)
+#define RhoQ2_comp     (RhoQ1_comp+1)
+#define RhoQ3_comp     (RhoQ1_comp+2)
+#define RhoQ4_comp     (RhoQ1_comp+3)
+#define RhoQ5_comp     (RhoQ1_comp+4)
+#define RhoQ6_comp     (RhoQ1_comp+5)
+
+// Cell-centered primitive variables
+#define PrimTheta_comp   (RhoTheta_comp -1)
+#define PrimKE_comp      (RhoKE_comp    -1)
+#define PrimScalar_comp  (RhoScalar_comp-1)
+#define PrimQ1_comp      (RhoQ1_comp-1)
+#define PrimQ2_comp      (RhoQ2_comp-1)
+#define PrimQ3_comp      (RhoQ3_comp-1)
+#define PrimQ4_comp      (RhoQ4_comp-1)
+#define PrimQ5_comp      (RhoQ5_comp-1)
+#define PrimQ6_comp      (RhoQ6_comp-1)
+
+// Base state variables
+namespace BaseState {
+    enum {
+        r0_comp = 0,
+        p0_comp,
+        pi0_comp,
+        th0_comp,
+        qv0_comp,
+        num_comps
+    };
+}
+
+// NOTE: we still use this indexing even if no moisture
+// NOTE: We assume a single boundary condition for all passive scalars
+namespace BCVars {
+    enum {
+        cons_bc = 0,
+        Rho_bc_comp = 0,
+        RhoTheta_bc_comp,
+        RhoKE_bc_comp,
+        RhoScalar_bc_comp,
+        RhoQ1_bc_comp,
+        RhoQ2_bc_comp,
+        RhoQ3_bc_comp,
+        RhoQ4_bc_comp,
+        RhoQ5_bc_comp,
+        RhoQ6_bc_comp,
+        xvel_bc = NBCVAR_max,
+        yvel_bc = NBCVAR_max+1,
+        zvel_bc = NBCVAR_max+2,
+        NumTypes
+    };
+}
+
+// Note that we don't use these, but we need this vector to be long enough
+//  not to segfault when we do the FillPatch operation.
+namespace BaseBCVars {
+    enum {
+        rho0_bc_comp = 0,
+          p0_bc_comp,
+         pi0_bc_comp,
+         th0_bc_comp,
+         qv0_bc_comp
+    };
+}
+
+namespace RealBdyVars {
+    enum {
+        U  = 0,
+        V  = 1,
+        T  = 2,
+        QV = 3,
+        NumTypes
+    };
+}
+
+namespace WRFBdyVars {
+    enum {
+        U  = 0,
+        V  = 1,
+        T  = 2,
+        QV = 3, // water vapor
+        MU    , // bdy perturbation dry air mass in column (we will get mub from the initial data)
+        PC    , // p_s - p_top = dry hydrostatic pressure difference between the surface and the model top
+        NumTypes
+    };
+}
+
+namespace MetGridBdyVars {
+    enum {
+        U  = 0,
+        V  = 1,
+        T  = 2,
+        QV = 3,
+        NumTypes
+    };
+}
+
+namespace MetGridTmpSrcVars {
+    enum {
+        Theta = 0,
+        QV    = 1,
+        NumTypes
+    };
+}
+
+namespace MetGridTmpDstVars {
+    enum {
+        P = 0,
+        T = 1,
+        Theta = 2,
+        QV = 3,
+        NumTypes
+    };
+}
+
+namespace Vars {
+    enum {
+        cons = 0,
+        xvel,
+        yvel,
+        zvel,
+        NumTypes
+    };
+}
+
+namespace GpVars {
+    enum {
+        gpx = 0,
+        gpy,
+        gpz,
+    };
+}
+
+namespace IntVars {
+    enum {
+        cons = 0,
+        xmom,
+        ymom,
+        zmom,
+        NumTypes
+    };
+}
+
+// We separate out horizontal and vertical turbulent diffusivities
+// These are the same for LES, but different for PBL models
+namespace EddyDiff {
+    enum {
+        Mom_h = 0,
+        Theta_h,
+        KE_h,
+        Scalar_h,
+        Q_h,
+        Mom_v,
+        Theta_v,
+        KE_v,
+        Scalar_v,
+        Q_v,
+        Turb_lengthscale,
+        NumDiffs
+    };
+}
+
+enum struct ERF_BC {
+    symmetry,
+    inflow,
+    outflow,
+    inflow_outflow,
+    ho_outflow,
+    open,
+    no_slip_wall,
+    slip_wall,
+    periodic,
+    surface_layer,
+    undefined
+};
+
+// NOTE: the first of these must match up with the BCType enum
+//     in amrex/Src/Base/AMReX_BC_TYPES.H.  We had extras at
+//     the end to use locally
+namespace ERFBCType {
+enum mathematicalBndryTypes : int {
+    bogus            = -666,
+    reflect_odd      = -1,
+    int_dir          =  0,
+    reflect_even     =  1,
+    foextrap         =  2,
+    ext_dir          =  3,
+    hoextrap         =  4,
+    surface_layer    =  101,
+    ext_dir_prim     =  102,
+    ext_dir_ingested =  103,
+    neumann          =  104,
+    neumann_int      =  105,
+    open             =  106,
+    ext_dir_upwind   =  107
+};
+}
+
+enum struct AdvType : int {
+    Centered_2nd  = 101,
+    Upwind_3rd    = 102,
+    Upwind_3rd_SL = 103,
+    Centered_4th  = 104,
+    Upwind_5th    = 105,
+    Centered_6th  = 106,
+    Weno_3        = 107,
+    Weno_3Z       = 108,
+    Weno_5        = 109,
+    Weno_5Z       = 110,
+    Weno_3MZQ     = 111,
+    Weno_7        = 112,
+    Weno_7Z       = 113,
+    Unknown       = 114
+};
+#endif

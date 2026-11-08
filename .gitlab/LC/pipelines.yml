@@ -1,0 +1,12 @@
+# One parent-pipeline entry per LC machine. To add a machine, copy its
+# runners/<machine>.yml and jobs/<machine>.yml from ERF's .gitlab/LC (vendored at
+# models/ERF/.gitlab/LC) and add an entry here following the same pattern.
+
+dane-build-and-test:
+  variables:
+    CI_MACHINE: "dane"
+    ON_DANE: "ON"
+  extends: [.build-and-test]
+  rules:
+    # Runs unless we explicitly deactivate this system
+    - if: $ON_DANE == "ON"

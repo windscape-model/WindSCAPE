@@ -1,0 +1,739 @@
+#ifndef ERF_INTERPOLATE_UPW_H_
+#define ERF_INTERPOLATE_UPW_H_
+
+#include "ERF_DataStruct.H"
+
+/**
+ * Interpolation operators used for 2nd order centered scheme
+ */
+struct CENTERED2
+{
+    CENTERED2 (const amrex::Array4<const amrex::Real>& phi,
+               const amrex::Real /*upw_frac*/)
+        : m_phi(phi) {}
+
+    AMREX_GPU_DEVICE
+    AMREX_FORCE_INLINE
+    void
+    InterpolateInX (const int& i,
+                    const int& j,
+                    const int& k,
+                    const int& qty_index,
+                    amrex::Real& val_lo,
+                    amrex::Real /*upw_lo*/) const
+    {
+        // Data to interpolate on
+        amrex::Real s   = m_phi(i  , j  , k  , qty_index);
+        amrex::Real sm1 = m_phi(i-1, j  , k  , qty_index);
+
+        // Interpolate lo
+        val_lo = Evaluate(s,sm1);
+    }
+
+    AMREX_GPU_DEVICE
+    AMREX_FORCE_INLINE
+    void
+    InterpolateInY (const int& i,
+                    const int& j,
+                    const int& k,
+                    const int& qty_index,
+                    amrex::Real& val_lo,
+                    amrex::Real /*upw_lo*/) const
+    {
+        // Data to interpolate on
+        amrex::Real s   = m_phi(i  , j  , k  , qty_index);
+        amrex::Real sm1 = m_phi(i  , j-1, k  , qty_index);
+
+        // Interpolate lo
+        val_lo = Evaluate(s,sm1);
+    }
+
+    AMREX_GPU_DEVICE
+    AMREX_FORCE_INLINE
+    void
+    InterpolateInZ (const int& i,
+                    const int& j,
+                    const int& k,
+                    const int& qty_index,
+                    amrex::Real& val_lo,
+                    amrex::Real /*upw_lo*/) const
+    {
+        // Data to interpolate on
+        amrex::Real s   = m_phi(i  , j  , k  , qty_index);
+        amrex::Real sm1 = m_phi(i  , j  , k-1, qty_index);
+
+        // Interpolate lo
+        val_lo = Evaluate(s,sm1);
+    }
+
+    AMREX_GPU_DEVICE
+    AMREX_FORCE_INLINE
+    amrex::Real
+    Evaluate(const amrex::Real& s,
+             const amrex::Real& sm1) const
+    {
+        // Averages and diffs
+        amrex::Real a1 = (s   + sm1);
+
+        // Interpolated value
+        return ( g1*a1 );
+    }
+
+    int GetUpwindCellNumber() const {return 1;}
+
+private:
+    amrex::Array4<const amrex::Real> m_phi;   // Quantity to interpolate
+    static constexpr amrex::Real g1=(myhalf);
+};
+
+/**
+ * Interpolation operators used for 3rd order upwind scheme
+ */
+struct UPWIND3
+{
+    UPWIND3 (const amrex::Array4<const amrex::Real>& phi,
+             const amrex::Real upw_frac)
+        : m_phi(phi)
+        , m_upw_frac(upw_frac)
+    {}
+
+    AMREX_GPU_DEVICE
+    AMREX_FORCE_INLINE
+    void
+    InterpolateInX (const int& i,
+                    const int& j,
+                    const int& k,
+                    const int& qty_index,
+                    amrex::Real& val_lo,
+                    amrex::Real upw_lo) const
+    {
+        // Data to interpolate on
+        amrex::Real sp1 = m_phi(i+1, j  , k  , qty_index);
+        amrex::Real s   = m_phi(i  , j  , k  , qty_index);
+        amrex::Real sm1 = m_phi(i-1, j  , k  , qty_index);
+        amrex::Real sm2 = m_phi(i-2, j  , k  , qty_index);
+
+        // Upwinding flags
+        if (upw_lo != amrex::Real(0)) upw_lo = (upw_lo > 0) ? amrex::Real(1) : -amrex::Real(1);
+
+        // Add blending
+        upw_lo *= m_upw_frac;
+
+        // Interpolate lo
+        val_lo = Evaluate(sp1,s,sm1,sm2,upw_lo);
+    }
+
+    AMREX_GPU_DEVICE
+    AMREX_FORCE_INLINE
+    void
+    InterpolateInY (const int& i,
+                    const int& j,
+                    const int& k,
+                    const int& qty_index,
+                    amrex::Real& val_lo,
+                    amrex::Real upw_lo) const
+    {
+        // Data to interpolate on
+        amrex::Real sp1 = m_phi(i  , j+1, k  , qty_index);
+        amrex::Real s   = m_phi(i  , j  , k  , qty_index);
+        amrex::Real sm1 = m_phi(i  , j-1, k  , qty_index);
+        amrex::Real sm2 = m_phi(i  , j-2, k  , qty_index);
+
+        // Upwinding flags
+        if (upw_lo != amrex::Real(0)) upw_lo = (upw_lo > 0) ? amrex::Real(1) : -amrex::Real(1);
+
+        // Add blending
+        upw_lo *= m_upw_frac;
+
+        // Interpolate lo
+        val_lo = Evaluate(sp1,s,sm1,sm2,upw_lo);
+    }
+
+    AMREX_GPU_DEVICE
+    AMREX_FORCE_INLINE
+    void
+    InterpolateInZ (const int& i,
+                    const int& j,
+                    const int& k,
+                    const int& qty_index,
+                    amrex::Real& val_lo,
+                    amrex::Real upw_lo) const
+    {
+        // Data to interpolate on
+        amrex::Real sp1 = m_phi(i  , j  , k+1, qty_index);
+        amrex::Real s   = m_phi(i  , j  , k  , qty_index);
+        amrex::Real sm1 = m_phi(i  , j  , k-1, qty_index);
+        amrex::Real sm2 = m_phi(i  , j  , k-2, qty_index);
+
+        // Upwinding flags
+        if (upw_lo != amrex::Real(0)) upw_lo = (upw_lo > 0) ? amrex::Real(1) : -amrex::Real(1);
+
+        // Add blending
+        upw_lo *= m_upw_frac;
+
+        // Interpolate lo
+        val_lo = Evaluate(sp1,s,sm1,sm2,upw_lo);
+    }
+
+    AMREX_GPU_DEVICE
+    AMREX_FORCE_INLINE
+    amrex::Real
+    Evaluate (const amrex::Real& sp1,
+              const amrex::Real& s,
+              const amrex::Real& sm1,
+              const amrex::Real& sm2,
+              const amrex::Real& upw) const
+    {
+        // Averages and diffs
+        amrex::Real a1 = (s   + sm1);
+        amrex::Real d1 = (s   - sm1);
+        amrex::Real a2 = (sp1 + sm2);
+        amrex::Real d2 = (sp1 - sm2);
+
+        // Interpolated value
+        return ( g1*a1 - g2*a2 + upw * g2 * (d2 - three*d1) );
+    }
+
+    int GetUpwindCellNumber() const {return 2;}
+
+    void SetUpwinding(amrex::Real upw_frac) {m_upw_frac = upw_frac;}
+
+private:
+    amrex::Array4<const amrex::Real> m_phi;   // Quantity to interpolate
+    amrex::Real m_upw_frac; // Upwinding fraction
+    static constexpr amrex::Real g1=(amrex::Real(7.0)/amrex::Real(12.0));
+    static constexpr amrex::Real g2=(amrex::Real(1)/amrex::Real(12.0));
+};
+
+
+/**
+ * Interpolation operators used for 3rd order upwind scheme
+ */
+struct UPWIND3SL
+{
+    UPWIND3SL (const amrex::Array4<const amrex::Real>& phi,
+               const amrex::Real /*upw_frac*/)
+        : m_phi(phi)
+    {}
+
+    AMREX_GPU_DEVICE
+    AMREX_FORCE_INLINE
+    void
+    InterpolateInX (const int& i,
+                    const int& j,
+                    const int& k,
+                    const int& qty_index,
+                    amrex::Real& val_lo,
+                    amrex::Real upw_lo) const
+    {
+        // Upwinding flags
+        if (upw_lo != amrex::Real(0)) upw_lo = (upw_lo > 0) ? amrex::Real(1) : -amrex::Real(1);
+
+        // Data to interpolate on
+        amrex::Real sp1 = m_phi(i+1, j  , k  , qty_index);
+        amrex::Real s   = m_phi(i  , j  , k  , qty_index);
+        amrex::Real sm1 = m_phi(i-1, j  , k  , qty_index);
+        amrex::Real sm2 = m_phi(i-2, j  , k  , qty_index);
+
+        // Left and right fluxes
+        amrex::Real Fhi = Evaluate(s  ,sm1,sm2);
+        amrex::Real Flo = Evaluate(sm1,s  ,sp1);
+
+        // Numerical flux
+        val_lo = (amrex::Real(1) + upw_lo)/amrex::Real(2) * Fhi + (amrex::Real(1) - upw_lo)/amrex::Real(2) * Flo;
+    }
+
+    AMREX_GPU_DEVICE
+    AMREX_FORCE_INLINE
+    void
+    InterpolateInY (const int& i,
+                    const int& j,
+                    const int& k,
+                    const int& qty_index,
+                    amrex::Real& val_lo,
+                    amrex::Real upw_lo) const
+    {
+        // Upwinding flags
+        if (upw_lo != amrex::Real(0)) upw_lo = (upw_lo > 0) ? amrex::Real(1) : -amrex::Real(1);
+
+        // Data to interpolate on
+        amrex::Real sp1 = m_phi(i  , j+1, k  , qty_index);
+        amrex::Real s   = m_phi(i  , j  , k  , qty_index);
+        amrex::Real sm1 = m_phi(i  , j-1, k  , qty_index);
+        amrex::Real sm2 = m_phi(i  , j-2, k  , qty_index);
+
+        // Left and right fluxes
+        amrex::Real Fhi = Evaluate(s  ,sm1,sm2);
+        amrex::Real Flo = Evaluate(sm1,s  ,sp1);
+
+        // Numerical flux
+        val_lo = (amrex::Real(1) + upw_lo)/amrex::Real(2) * Fhi + (amrex::Real(1) - upw_lo)/amrex::Real(2) * Flo;
+    }
+
+    AMREX_GPU_DEVICE
+    AMREX_FORCE_INLINE
+    void
+    InterpolateInZ (const int& i,
+                    const int& j,
+                    const int& k,
+                    const int& qty_index,
+                    amrex::Real& val_lo,
+                    amrex::Real upw_lo) const
+    {
+        // Upwinding flags
+        if (upw_lo != amrex::Real(0)) upw_lo = (upw_lo > 0) ? amrex::Real(1) : -amrex::Real(1);
+
+        // Data to interpolate on
+        amrex::Real sp1 = m_phi(i  , j  , k+1, qty_index);
+        amrex::Real s   = m_phi(i  , j  , k  , qty_index);
+        amrex::Real sm1 = m_phi(i  , j  , k-1, qty_index);
+        amrex::Real sm2 = m_phi(i  , j  , k-2, qty_index);
+
+        // Left and right fluxes
+        amrex::Real Fhi = Evaluate(s  ,sm1,sm2);
+        amrex::Real Flo = Evaluate(sm1,s  ,sp1);
+
+        // Numerical flux
+        val_lo = (amrex::Real(1) + upw_lo)/amrex::Real(2) * Fhi + (amrex::Real(1) - upw_lo)/amrex::Real(2) * Flo;
+    }
+
+    AMREX_GPU_DEVICE
+    AMREX_FORCE_INLINE
+    amrex::Real
+    Evaluate (const amrex::Real& s,
+              const amrex::Real& sm1,
+              const amrex::Real& sm2) const
+    {
+        amrex::Real rmh = (s - sm1) / ((sm1 - sm2) + eps);
+        amrex::Real K   = l2 + amrex::Real(2)*l2*rmh;
+        amrex::Real phi = std::max(amrex::Real(0),std::min(amrex::Real(2)*rmh,std::min(amrex::Real(2),K)));
+        return (sm1 + myhalf * phi * (sm1 - sm2));
+    }
+
+    int GetUpwindCellNumber() const {return 2;}
+
+private:
+    amrex::Array4<const amrex::Real> m_phi;   // Quantity to interpolate
+    static constexpr amrex::Real eps=(amrex::Real(1.0e-16));
+    static constexpr amrex::Real l1 =(amrex::Real(1)/amrex::Real(6.0));
+    static constexpr amrex::Real l2 =(amrex::Real(1)/three);
+};
+
+
+/**
+ * Interpolation operators used for 4th order centered scheme
+ */
+struct CENTERED4
+{
+    CENTERED4 (const amrex::Array4<const amrex::Real>& phi,
+               const amrex::Real /*upw_frac*/)
+        : m_phi(phi) {}
+
+    AMREX_GPU_DEVICE
+    AMREX_FORCE_INLINE
+    void
+    InterpolateInX (const int& i,
+                    const int& j,
+                    const int& k,
+                    const int& qty_index,
+                    amrex::Real& val_lo,
+                    amrex::Real /*upw_lo*/) const
+    {
+        // Data to interpolate on
+        amrex::Real sp1 = m_phi(i+1, j  , k  , qty_index);
+        amrex::Real s   = m_phi(i  , j  , k  , qty_index);
+        amrex::Real sm1 = m_phi(i-1, j  , k  , qty_index);
+        amrex::Real sm2 = m_phi(i-2, j  , k  , qty_index);
+
+        // Interpolate lo
+        val_lo = Evaluate(sp1,s,sm1,sm2);
+    }
+
+    AMREX_GPU_DEVICE
+    AMREX_FORCE_INLINE
+    void
+    InterpolateInY (const int& i,
+                    const int& j,
+                    const int& k,
+                    const int& qty_index,
+                    amrex::Real& val_lo,
+                    amrex::Real /*upw_lo*/) const
+    {
+        // Data to interpolate on
+        amrex::Real sp1 = m_phi(i  , j+1, k  , qty_index);
+        amrex::Real s   = m_phi(i  , j  , k  , qty_index);
+        amrex::Real sm1 = m_phi(i  , j-1, k  , qty_index);
+        amrex::Real sm2 = m_phi(i  , j-2, k  , qty_index);
+
+        // Interpolate lo
+        val_lo = Evaluate(sp1,s,sm1,sm2);
+    }
+
+    AMREX_GPU_DEVICE
+    AMREX_FORCE_INLINE
+    void
+    InterpolateInZ (const int& i,
+                    const int& j,
+                    const int& k,
+                    const int& qty_index,
+                    amrex::Real& val_lo,
+                    amrex::Real /*upw_lo*/) const
+    {
+        // Data to interpolate on
+        amrex::Real sp1 = m_phi(i  , j  , k+1, qty_index);
+        amrex::Real s   = m_phi(i  , j  , k  , qty_index);
+        amrex::Real sm1 = m_phi(i  , j  , k-1, qty_index);
+        amrex::Real sm2 = m_phi(i  , j  , k-2, qty_index);
+
+        // Interpolate lo
+        val_lo = Evaluate(sp1,s,sm1,sm2);
+    }
+
+    AMREX_GPU_DEVICE
+    AMREX_FORCE_INLINE
+    amrex::Real
+    Evaluate (const amrex::Real& sp1,
+              const amrex::Real& s,
+              const amrex::Real& sm1,
+              const amrex::Real& sm2) const
+    {
+        // Averages and diffs
+        amrex::Real a1 = (s   + sm1);
+        amrex::Real a2 = (sp1 + sm2);
+
+        // Interpolated value
+        return ( g1*a1 - g2*a2 );
+    }
+
+    int GetUpwindCellNumber() const {return 2;}
+
+private:
+    amrex::Array4<const amrex::Real> m_phi;   // Quantity to interpolate
+    static constexpr amrex::Real g1=(amrex::Real(7.0)/amrex::Real(12.0));
+    static constexpr amrex::Real g2=(amrex::Real(1)/amrex::Real(12.0));
+};
+
+/**
+ * Interpolation operators used for 5th order upwind scheme
+ */
+struct UPWIND5
+{
+    UPWIND5 (const amrex::Array4<const amrex::Real>& phi,
+             const amrex::Real upw_frac)
+        : m_phi(phi)
+        , m_upw_frac(upw_frac)
+    {}
+
+    AMREX_GPU_DEVICE
+    AMREX_FORCE_INLINE
+    void
+    InterpolateInX (const int& i,
+                    const int& j,
+                    const int& k,
+                    const int& qty_index,
+                    amrex::Real& val_lo,
+                    amrex::Real upw_lo) const
+    {
+        // Data to interpolate on
+        amrex::Real sp2 = m_phi(i+2, j  , k  , qty_index);
+        amrex::Real sp1 = m_phi(i+1, j  , k  , qty_index);
+        amrex::Real s   = m_phi(i  , j  , k  , qty_index);
+        amrex::Real sm1 = m_phi(i-1, j  , k  , qty_index);
+        amrex::Real sm2 = m_phi(i-2, j  , k  , qty_index);
+        amrex::Real sm3 = m_phi(i-3, j  , k  , qty_index);
+
+        // Upwinding flags
+        if (upw_lo != amrex::Real(0)) upw_lo = (upw_lo > 0) ? amrex::Real(1) : -amrex::Real(1);
+
+        // Add blending
+        upw_lo *= m_upw_frac;
+
+        // Interpolate lo
+        val_lo = Evaluate(sp2,sp1,s,sm1,sm2,sm3,upw_lo);
+    }
+
+    AMREX_GPU_DEVICE
+    AMREX_FORCE_INLINE
+    void
+    InterpolateInY (const int& i,
+                    const int& j,
+                    const int& k,
+                    const int& qty_index,
+                    amrex::Real& val_lo,
+                    amrex::Real upw_lo) const
+    {
+        // Data to interpolate on
+        amrex::Real sp2 = m_phi(i  , j+2, k  , qty_index);
+        amrex::Real sp1 = m_phi(i  , j+1, k  , qty_index);
+        amrex::Real s   = m_phi(i  , j  , k  , qty_index);
+        amrex::Real sm1 = m_phi(i  , j-1, k  , qty_index);
+        amrex::Real sm2 = m_phi(i  , j-2, k  , qty_index);
+        amrex::Real sm3 = m_phi(i  , j-3, k  , qty_index);
+
+        // Upwinding flags
+        if (upw_lo != amrex::Real(0)) upw_lo = (upw_lo > 0) ? amrex::Real(1) : -amrex::Real(1);
+
+        // Add blending
+        upw_lo *= m_upw_frac;
+
+        // Interpolate lo
+        val_lo = Evaluate(sp2,sp1,s,sm1,sm2,sm3,upw_lo);
+    }
+
+    AMREX_GPU_DEVICE
+    AMREX_FORCE_INLINE
+    void
+    InterpolateInZ (const int& i,
+                    const int& j,
+                    const int& k,
+                    const int& qty_index,
+                    amrex::Real& val_lo,
+                    amrex::Real upw_lo) const
+    {
+        // Data to interpolate on
+        amrex::Real sp2 = m_phi(i  , j  , k+2, qty_index);
+        amrex::Real sp1 = m_phi(i  , j  , k+1, qty_index);
+        amrex::Real s   = m_phi(i  , j  , k  , qty_index);
+        amrex::Real sm1 = m_phi(i  , j  , k-1, qty_index);
+        amrex::Real sm2 = m_phi(i  , j  , k-2, qty_index);
+        amrex::Real sm3 = m_phi(i  , j  , k-3, qty_index);
+
+        // Upwinding flags
+        if (upw_lo != amrex::Real(0)) upw_lo = (upw_lo > 0) ? amrex::Real(1) : -amrex::Real(1);
+
+        // Add blending
+        upw_lo *= m_upw_frac;
+
+        // Interpolate lo
+        val_lo = Evaluate(sp2,sp1,s,sm1,sm2,sm3,upw_lo);
+    }
+
+    AMREX_GPU_DEVICE
+    AMREX_FORCE_INLINE
+    amrex::Real
+    Evaluate (const amrex::Real& sp2,
+              const amrex::Real& sp1,
+              const amrex::Real& s,
+              const amrex::Real& sm1,
+              const amrex::Real& sm2,
+              const amrex::Real& sm3,
+              const amrex::Real& upw) const
+    {
+        // Averages and diffs
+        amrex::Real a1 = (s   + sm1);
+        amrex::Real a2 = (sp1 + sm2);
+        amrex::Real a3 = (sp2 + sm3);
+        amrex::Real d1 = (s   - sm1);
+        amrex::Real d2 = (sp1 - sm2);
+        amrex::Real d3 = (sp2 - sm3);
+
+        // Interpolated value
+        return ( g1*a1 - g2*a2 + g3*a3 - upw * g3 * (d3 - amrex::Real(5.0)*d2 + amrex::Real(10.0)*d1) );
+    }
+
+    int GetUpwindCellNumber() const {return 3;}
+
+    void SetUpwinding(amrex::Real upw_frac) {m_upw_frac = upw_frac;}
+
+private:
+    amrex::Array4<const amrex::Real> m_phi;   // Quantity to interpolate
+    amrex::Real m_upw_frac; // Upwinding fraction
+    static constexpr amrex::Real g1=(amrex::Real(37.0)/amrex::Real(60.0));
+    static constexpr amrex::Real g2=(amrex::Real(2)/amrex::Real(15.0));
+    static constexpr amrex::Real g3=(amrex::Real(1)/amrex::Real(60.0));
+};
+
+/**
+ * Interpolation operators used for 6th order centered scheme
+ */
+struct CENTERED6
+{
+    CENTERED6 (const amrex::Array4<const amrex::Real>& phi,
+               const amrex::Real /*upw_frac*/)
+        : m_phi(phi) {}
+
+    AMREX_GPU_DEVICE
+    AMREX_FORCE_INLINE
+    void
+    InterpolateInX (const int& i,
+                    const int& j,
+                    const int& k,
+                    const int& qty_index,
+                    amrex::Real& val_lo,
+                    amrex::Real /*upw_lo*/) const
+    {
+        // Data to interpolate on
+        amrex::Real sp2 = m_phi(i+2, j  , k  , qty_index);
+        amrex::Real sp1 = m_phi(i+1, j  , k  , qty_index);
+        amrex::Real s   = m_phi(i  , j  , k  , qty_index);
+        amrex::Real sm1 = m_phi(i-1, j  , k  , qty_index);
+        amrex::Real sm2 = m_phi(i-2, j  , k  , qty_index);
+        amrex::Real sm3 = m_phi(i-3, j  , k  , qty_index);
+
+        // Interpolate lo
+        val_lo = Evaluate(sp2,sp1,s,sm1,sm2,sm3);
+    }
+
+    AMREX_GPU_DEVICE
+    AMREX_FORCE_INLINE
+    void
+    InterpolateInY (const int& i,
+                    const int& j,
+                    const int& k,
+                    const int& qty_index,
+                    amrex::Real& val_lo,
+                    amrex::Real /*upw_lo*/) const
+    {
+        // Data to interpolate on
+        amrex::Real sp2 = m_phi(i  , j+2, k  , qty_index);
+        amrex::Real sp1 = m_phi(i  , j+1, k  , qty_index);
+        amrex::Real s   = m_phi(i  , j  , k  , qty_index);
+        amrex::Real sm1 = m_phi(i  , j-1, k  , qty_index);
+        amrex::Real sm2 = m_phi(i  , j-2, k  , qty_index);
+        amrex::Real sm3 = m_phi(i  , j-3, k  , qty_index);
+
+        // Interpolate lo
+        val_lo = Evaluate(sp2,sp1,s,sm1,sm2,sm3);
+    }
+
+    AMREX_GPU_DEVICE
+    AMREX_FORCE_INLINE
+    void
+    InterpolateInZ (const int& i,
+                    const int& j,
+                    const int& k,
+                    const int& qty_index,
+                    amrex::Real& val_lo,
+                    amrex::Real /*upw_lo*/) const
+    {
+        // Data to interpolate on
+        amrex::Real sp2 = m_phi(i  , j  , k+2, qty_index);
+        amrex::Real sp1 = m_phi(i  , j  , k+1, qty_index);
+        amrex::Real s   = m_phi(i  , j  , k  , qty_index);
+        amrex::Real sm1 = m_phi(i  , j  , k-1, qty_index);
+        amrex::Real sm2 = m_phi(i  , j  , k-2, qty_index);
+        amrex::Real sm3 = m_phi(i  , j  , k-3, qty_index);
+
+        // Interpolate lo
+        val_lo = Evaluate(sp2,sp1,s,sm1,sm2,sm3);
+    }
+
+    AMREX_GPU_DEVICE
+    AMREX_FORCE_INLINE
+    amrex::Real
+    Evaluate (const amrex::Real& sp2,
+              const amrex::Real& sp1,
+              const amrex::Real& s,
+              const amrex::Real& sm1,
+              const amrex::Real& sm2,
+              const amrex::Real& sm3) const
+    {
+        // Averages and diffs
+        amrex::Real a1 = (s   + sm1);
+        amrex::Real a2 = (sp1 + sm2);
+        amrex::Real a3 = (sp2 + sm3);
+
+        // Interpolated value
+        return ( g1*a1 - g2*a2 + g3*a3 );
+    }
+
+    int GetUpwindCellNumber() const {return 3;}
+
+private:
+    amrex::Array4<const amrex::Real> m_phi;   // Quantity to interpolate
+    static constexpr amrex::Real g1=(amrex::Real(37.0)/amrex::Real(60.0));
+    static constexpr amrex::Real g2=(amrex::Real(2)/amrex::Real(15.0));
+    static constexpr amrex::Real g3=(amrex::Real(1)/amrex::Real(60.0));
+};
+
+/**
+ * Interpolation operators used for all central/upwind schemes
+ */
+struct UPWINDALL
+{
+    UPWINDALL (const amrex::Array4<const amrex::Real>& phi,
+               const amrex::Real upw_frac)
+        : m_phi(phi)
+        , m_upw_frac(upw_frac)
+    {}
+
+    AMREX_GPU_DEVICE
+    AMREX_FORCE_INLINE
+    void
+    InterpolateInZ (const int& i,
+                    const int& j,
+                    const int& k,
+                    const int& qty_index,
+                    amrex::Real& val_lo,
+                    amrex::Real upw_lo,
+                    const AdvType adv_type) const
+    {
+        if (adv_type == AdvType::Centered_2nd) {
+            val_lo = myhalf * ( m_phi(i,j,k,qty_index) + m_phi(i,j,k-1,qty_index) );
+            return;
+        } else {
+            // Data to interpolate on
+            amrex::Real sp2 = (adv_type == AdvType::Upwind_5th || adv_type == AdvType::Centered_6th ) ? m_phi(i  , j  , k+2, qty_index): amrex::Real(0);
+            amrex::Real sp1 = m_phi(i  , j  , k+1, qty_index);
+            amrex::Real s   = m_phi(i  , j  , k  , qty_index);
+            amrex::Real sm1 = m_phi(i  , j  , k-1, qty_index);
+            amrex::Real sm2 = m_phi(i  , j  , k-2, qty_index);
+            amrex::Real sm3 = (adv_type == AdvType::Upwind_5th || adv_type == AdvType::Centered_6th ) ? m_phi(i  , j  , k-3, qty_index) : amrex::Real(0);
+
+            // Upwinding flags
+            if (upw_lo != amrex::Real(0)) upw_lo = (upw_lo > 0) ? amrex::Real(1) : -amrex::Real(1);
+
+            // Add blending
+            upw_lo *= m_upw_frac;
+
+            // Interpolate lo
+            val_lo = Evaluate(sp2,sp1,s,sm1,sm2,sm3,upw_lo,adv_type);
+        }
+    }
+
+    AMREX_GPU_DEVICE
+    AMREX_FORCE_INLINE
+    amrex::Real
+    Evaluate (const amrex::Real& sp2,
+              const amrex::Real& sp1,
+              const amrex::Real& s,
+              const amrex::Real& sm1,
+              const amrex::Real& sm2,
+              const amrex::Real& sm3,
+              const amrex::Real& upw,
+              const AdvType adv_type) const
+    {
+        // Averages and diffs
+        amrex::Real a1 = (s   + sm1);
+        amrex::Real a2 = (sp1 + sm2);
+        amrex::Real d1 = (s   - sm1);
+        amrex::Real d2 = (sp1 - sm2);
+        amrex::Real a3 = (sp2 + sm3);
+        amrex::Real d3 = (sp2 - sm3);
+
+        // Interpolated value
+        amrex::Real iv(amrex::Real(0));
+        if (adv_type == AdvType::Centered_2nd) {
+            iv = myhalf * a1;
+        } else if (adv_type == AdvType::Upwind_3rd) {
+            iv = g1_3_4*a1 - g2_3_4*a2 + upw * g2_3_4 * (d2 - three*d1);
+        } else if (adv_type == AdvType::Centered_4th) {
+            iv = g1_3_4*a1 - g2_3_4*a2;
+        } else if (adv_type == AdvType::Upwind_5th) {
+            iv = g1_5_6*a1 - g2_5_6*a2 + g3_5_6*a3 - upw * g3_5_6 * (d3 - amrex::Real(5.0)*d2 + amrex::Real(10.0)*d1);
+        } else if (adv_type == AdvType::Centered_6th) {
+            iv = g1_5_6*a1 - g2_5_6*a2 + g3_5_6*a3;
+        }
+        return ( iv );
+    }
+
+private:
+    amrex::Array4<const amrex::Real> m_phi;   // Quantity to interpolate
+    amrex::Real m_upw_frac; // Upwinding fraction
+    static constexpr amrex::Real g1_3_4=( amrex::Real(7.0)/amrex::Real(12.0));
+    static constexpr amrex::Real g2_3_4=( amrex::Real(1)/amrex::Real(12.0));
+    static constexpr amrex::Real g1_5_6=(amrex::Real(37.0)/amrex::Real(60.0));
+    static constexpr amrex::Real g2_5_6=( amrex::Real(2)/amrex::Real(15.0));
+    static constexpr amrex::Real g3_5_6=( amrex::Real(1)/amrex::Real(60.0));
+};
+#endif

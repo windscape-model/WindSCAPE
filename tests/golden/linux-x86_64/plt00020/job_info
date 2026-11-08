@@ -1,0 +1,174 @@
+===============================================================================
+ ERF Job Information
+===============================================================================
+inputs file: inputs_erf
+
+number of MPI processes: 1
+
+CPU time used since start of simulation (CPU-hours): 0.000626199
+
+===============================================================================
+ Plotfile Information
+===============================================================================
+output data / time: Sat Jul 18 03:32:56 2026
+output dir:         /home/runner/work/WindSCAPE/WindSCAPE/ci_runs/golden
+
+
+===============================================================================
+ Build Information
+===============================================================================
+build date:    Jul 18 2026 03:32:43
+build machine: Linux runnervm3jd5f 6.17.0-1020-azure #20~24.04.1-Ubuntu SMP Fri Jun 19 20:09:14 UTC 2026 x86_64
+build dir:     /home/runner/work/WindSCAPE/WindSCAPE/build/superbuild/coupler-build
+AMReX dir:     /home/runner/work/WindSCAPE/WindSCAPE/build/superbuild/install/amrex
+
+COMP:          GNU
+COMP version:  13.3.0
+
+
+ERF       git hash: dade8cfd4e67
+AMReX       git hash: 25.12
+
+
+===============================================================================
+ Grid Information
+===============================================================================
+ level: 0
+   number of boxes = 1
+   maximum zones   = 40 8 79 
+
+ Boundary conditions
+   -x: Periodic
+   +x: Periodic
+   -y: Periodic
+   +y: Periodic
+   -z: SlipWall
+   +z: SlipWall
+
+
+===============================================================================
+ Inputs File Parameters
+===============================================================================
+DistributionMapping.verbose = 0
+amr.blocking_factor = 1
+amr.check_input = 1
+amr.grid_eff = 0.69999999999999996
+amr.max_grid_size = 2048
+amr.max_level = 0
+amr.n_cell = 40 8 79
+amr.n_error_buf = 0
+amr.n_proper = 2
+amr.refine_grid_layout = 1
+amr.refine_grid_layout_x = 1
+amr.refine_grid_layout_y = 1
+amr.refine_grid_layout_z = 0
+amr.v = 0
+amrex.abort_on_out_of_gpu_memory = 0
+amrex.abort_on_unused_inputs = 0
+amrex.async_out = 0
+amrex.async_out_nfiles = 64
+amrex.fpe_trap_invalid = 1
+amrex.fpe_trap_overflow = 0
+amrex.fpe_trap_zero = 0
+amrex.handle_sigabrt = 1
+amrex.handle_sigfpe = 1
+amrex.handle_sigill = 1
+amrex.handle_sigint = 1
+amrex.handle_sigsegv = 1
+amrex.handle_sigterm = 0
+amrex.init_snan = 0
+amrex.mf.alloc_single_chunk = 0
+amrex.signal_handling = 1
+amrex.the_arena_defragmentation = 1
+amrex.the_arena_init_size = 8388608
+amrex.the_arena_is_managed = 0
+amrex.the_arena_release_threshold = 9223372036854775807
+amrex.the_comms_arena_defragmentation = 1
+amrex.the_comms_arena_init_size = 8388608
+amrex.the_comms_arena_release_threshold = 9223372036854775807
+amrex.the_device_arena_defragmentation = 1
+amrex.the_device_arena_init_size = 8388608
+amrex.the_device_arena_release_threshold = 9223372036854775807
+amrex.the_managed_arena_defragmentation = 1
+amrex.the_managed_arena_init_size = 8388608
+amrex.the_managed_arena_release_threshold = 9223372036854775807
+amrex.the_pinned_arena_defragmentation = 1
+amrex.the_pinned_arena_init_size = 8388608
+amrex.the_pinned_arena_release_threshold = 9223372036854775807
+amrex.throw_exception = 0
+amrex.use_gpu_aware_mpi = 0
+amrex.vector_growth_factor = 1.5
+amrex.verbose = 1
+crescent.amr.blocking_factor = 1
+crescent.amr.check_input = 1
+crescent.amr.grid_eff = 0.69999999999999996
+crescent.amr.max_grid_size = 256
+crescent.amr.max_level = 0
+crescent.amr.n_cell = 200 40 1
+crescent.amr.n_proper = 1
+crescent.amr.refine_grid_layout = 1
+crescent.amr.verbose = 0
+crescent.beta1_filter = 10.0
+crescent.beta2_filter = 15.0
+crescent.check_file = crescent_chk
+crescent.check_int = -1
+crescent.dt = 0.001
+crescent.geometry.coord_sys = 0
+crescent.geometry.is_periodic = 1 1 0
+crescent.geometry.prob_hi = 200.0 40.0 10.0
+crescent.geometry.prob_lo = 0.0 0.0 0.0
+crescent.max_steps(nvals = 1)  :: [10000]
+crescent.perturbation_order = 3
+crescent.plot_file = crescent_coupled
+crescent.plot_int = -1
+crescent.stop_time(nvals = 1)  :: [10.0]
+crescent.swell_wavenumber = 0.0628318
+crescent.tecplot_int = -1
+crescent.verbosity = 1
+crescent.wave_angle = 0.0
+crescent.wave_mode_x = 4
+crescent.wave_steepness = 0.15
+crescent.wave_type = stokes
+eb2.extend_domain_face = 1
+eb2.max_grid_size = 64
+eb2.num_coarsen_opt = 0
+erf.check_file = chk
+erf.check_int = -1
+erf.crescent_coupling = true
+erf.crescent_dt_ratio = 5
+erf.crescent_grid_ratio = 5
+erf.crescent_input_file = inputs_crescent
+erf.dryscal_horiz_adv_type = Centered_2nd
+erf.dryscal_vert_adv_type = Centered_2nd
+erf.dycore_horiz_adv_type = Centered_2nd
+erf.dycore_vert_adv_type = Centered_2nd
+erf.fixed_dt = 0.005
+erf.init_type = Isentropic
+erf.les_type = None
+erf.molec_diff_type = None
+erf.plot_file_1 = plt
+erf.plot_int_1 = 1000
+erf.plot_int_1 = 20
+erf.plot_vars_1 = density x_velocity y_velocity z_velocity pressure theta pres_hse dens_hse pert_pres pert_dens detJ pp_err xvel_err zvel_err
+erf.prob_name = ERF-CRESCENT Coupled Wave Test
+erf.substepping_type = None
+erf.sum_interval = -1
+erf.terrain_smoothing = 2
+erf.terrain_type = MovingFittedMesh
+erf.use_gravity = true
+erf.v = 0
+erf.water_density = 1000.0
+fabarray.comm_tile_size = 1024000 1024000 1024000
+fabarray.mfiter_tile_size = 1024 1024 1024
+geometry.coord_sys = 0
+geometry.is_periodic = 1 1 0
+geometry.prob_extent = 200. 40. 395.
+geometry.prob_lo = 0 0 0
+max_step = 2000
+max_step = 20
+prob.Ampl = 0.0
+prob.custom_terrain_type = CRESCENTWaves
+prob.wavelength = 100.0
+stop_time = 10.0
+zhi.type = SlipWall
+zlo.type = SlipWall

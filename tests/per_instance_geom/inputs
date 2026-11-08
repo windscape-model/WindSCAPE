@@ -1,0 +1,17 @@
+# Instance "a": domain 100^3, periodic in x,y
+a.amr.n_cell        = 16 16 16
+a.amr.max_level     = 1
+a.amr.ref_ratio     = 2
+a.amr.blocking_factor = 2
+a.geometry.prob_lo  = 0 0 0
+a.geometry.prob_hi  = 100 100 100
+a.geometry.is_periodic = 1 1 0
+
+# Instance "b": DIFFERENT domain 50^3, periodic in z only
+b.amr.n_cell        = 8 8 8
+b.amr.max_level     = 1
+b.amr.ref_ratio     = 2
+b.amr.blocking_factor = 2
+b.geometry.prob_lo  = 0 0 0
+b.geometry.prob_hi  = 50 50 50
+b.geometry.is_periodic = 0 0 1
